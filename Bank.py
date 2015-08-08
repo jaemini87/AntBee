@@ -124,7 +124,6 @@ class Bank:
 			print row
 		"""
 		finmlb.close()
-
 		pass
 	def get_game_info_from_str(self,fin_line):
 		cur_time = int(fin_line[0:2])
