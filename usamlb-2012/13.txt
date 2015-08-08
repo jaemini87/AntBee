@@ -1,0 +1,33 @@
+Chicago Cubs - Colorado Rockies#5#3#9.5#2.04#1.8#(0:1, 0:1, 0:1, 0:0, 2:0, 0:0, 0:0, 3:0, 0:0)#
+San Francisco Giants - Atlanta Braves#5#2#7.5#1.77#2.04#(0:0, 0:0, 1:0, 0:0, 4:0, 0:0, 0:0, 0:0, 0:2)#
+Texas Rangers - Minnesota Twins#10#6#9.5#1.87#1.86#(2:1, 0:0, 0:1, 0:0, 2:0, 0:2, 0:0, 6:0, 0:2)#
+Boston Red Sox - Los Angeles Angels#13#14#9.5#1.98#1.83#(1:0, 5:0, 0:8, 0:0, 1:0, 2:0, 0:1, 2:0, 1:3, 1:2)#
+Tampa Bay Rays - Oakland Athletics#5#0#7.5#1.9#1.84#(0:0, 0:0, 0:0, 0:0, 5:0, 0:0, 0:0, 0:0, 0:0)#
+Philadelphia Phillies - Cincinnati Reds#4#3#6.5#2.02#1.73#(0:1, 0:0, 0:0, 0:0, 0:0, 2:2, 0:0, 1:0, 0:0, 1:0)#
+Detroit Tigers - Los Angeles Dodgers#4#1#7.5#1.77#2.06#(2:0, 0:0, 0:0, 1:0, 0:1, 0:0, 0:0, 1:0, X:0)#
+Seattle Mariners - Minnesota Twins#0#2#7.5#1.79#2.04#(0:0, 0:0, 0:0, 0:0, 0:1, 0:0, 0:0, 0:1, 0:0)#
+Detroit Tigers - Toronto Blue Jays#3#2#7.5#1.85#1.94#(0:0, 0:0, 0:0, 0:2, 0:0, 0:0, 0:0, 2:0, 0:0, 1:0)#
+Los Angeles Dodgers - San Francisco Giants#4#8#6.5#1.83#1.98#(0:3, 0:0, 0:0, 0:0, 0:0, 1:3, 0:2, 3:0, 0:0)#
+Arizona Diamondbacks - Miami Marlins#3#0#8.5#2.07#1.75#(1:0, 0:0, 0:0, 2:0, 0:0, 0:0, 0:0, 0:0, 0:0)#
+St.Louis Cardinals - Houston Astros#4#2#7.5#1.93#1.87#(0:1, 1:0, 0:1, 0:0, 2:0, 0:0, 0:0, 1:0, 0:0)#
+St.Louis Cardinals - Houston Astros#4#2#7.5#1.93#1.87#(0:1, 1:0, 0:1, 0:0, 2:0, 0:0, 0:0, 1:0, 0:0)#
+St.Louis Cardinals - Pittsburgh Pirates#5#4#8.5#1.81#2.0#(0:0, 2:0, 0:0, 0:2, 2:2, 0:0, 0:0, 0:0, 1:0)#
+Milwaukee Brewers - Philadelphia Phillies#7#9#8.5#1.85#1.98#(5:1, 0:5, 0:1, 0:0, 0:2, 2:0, 0:0, 0:0, 0:0)#
+Texas Rangers - Houston Astros#3#8#9.5#1.87#2.0#(0:2, 1:0, 0:1, 1:0, 0:0, 0:1, 1:1, 0:3, 0:0)#
+#-1#-1#0.0#5.0#0.0#(0:2, 1:0, 0:1, 1:0, 0:0, 0:1, 1:1, 0:3, 0:0)#
+#-1#-1#0.0#5.0#0.0#(0:2, 1:0, 0:1, 1:0, 0:0, 0:1, 1:1, 0:3, 0:0)#
+#2#3#8.5#1.86#1.94#(0:0, 0:0, 0:0, 0:0, 1:2, 0:0, 0:0, 0:1, 1:0)#
+#-1#-1#0.0#5.0#0.0#(0:0, 0:0, 0:0, 0:0, 1:2, 0:0, 0:0, 0:1, 1:0)#
+Tampa Bay Rays - Kansas City Royals#4#3#6.5#2.09#1.75#(0:0, 0:0, 0:0, 0:0, 0:1, 2:0, 0:0, 2:0, X:2)#
+Seattle Mariners - Cleveland Indians#3#1#7.5#1.71#2.1#(1:0, 0:0, 0:0, 0:0, 0:0, 0:1, 0:0, 2:0, 0:0)#
+Oakland Athletics - Minnesota Twins#5#1#7.5#1.88#1.9#(1:0, 0:1, 2:0, 1:0, 0:0, 0:0, 1:0, 0:0, 0:0)#
+Milwaukee Brewers - Chicago Cubs#3#2#8.5#1.85#1.96#(2:1, 0:0, 0:0, 0:0, 0:0, 1:0, 0:1, 0:0, 0:0)#
+Tampa Bay Rays - Kansas City Royals#5#3#7.5#1.71#2.09#(0:0, 0:1, 2:0, 0:0, 0:0, 1:0, 1:0, 1:2, 0:0)#
+Los Angeles Dodgers - San Francisco Giants#1#4#7.5#1.8#2.0#(0:2, 0:0, 0:0, 0:2, 0:0, 1:0, 0:0, 0:0, 0:0)#
+Seattle Mariners - Cleveland Indians#5#1#6.5#1.95#1.86#(0:0, 0:0, 0:0, 0:0, 1:0, 0:0, 4:1, 0:0, 0:0)#
+Seattle Mariners - Cleveland Indians#5#1#6.5#1.95#1.86#(0:0, 0:0, 0:0, 0:0, 1:0, 0:0, 4:1, 0:0, 0:0)#
+Seattle Mariners - Cleveland Indians#5#1#6.5#1.95#1.86#(0:0, 0:0, 0:0, 0:0, 1:0, 0:0, 4:1, 0:0, 0:0)#
+Seattle Mariners - Cleveland Indians#5#1#6.5#1.95#1.86#(0:0, 0:0, 0:0, 0:0, 1:0, 0:0, 4:1, 0:0, 0:0)#
+St.Louis Cardinals - Houston Astros#7#0#7.5#1.74#2.04#(4:0, 0:0, 2:0, 0:0, 0:0, 1:0, 0:0, 0:0, 0:0)#
+Boston Red Sox - Chicago White Sox#0#4#9.5#1.96#1.83#(0:0, 0:1, 0:0, 0:3, 0:0, 0:0, 0:0, 0:0, 0:0)#
+#9#3#0.0#5.0#0.0##
