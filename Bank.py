@@ -7,12 +7,24 @@ import sqlite3 as sql
 import html2text
 import urllib2
 class Bank:
-	Raw_Data_List = []
-	Future_Data = []
+	db_file = ""
 	def __init__(self):
 		pass
-	def get_oddsportal(self):
-		finmlb = open("mlb.txt",'r')
+#	def get_oddsportal(self):
+	def predict_day(self,day,month,year,mode):
+		finmlb = open("mlb2014.txt",'r')
+		fin_line = finmlb.readline()
+		str_league,str_year,pagenumber = fin_line.split("|")
+		db_file = mode+"_"+str_league+str_year+".db"
+		conn = sql.connect(db_file)
+		cur = conn.cursor()
+		cur.execute("select * from MLB_SU where day=:dayy and month=:monthh and year=:yearr",{"dayy":day,"monthh":month,"yearr":year})
+		for fetch in  cur.fetchall():
+			print fetch[7]
+		conn.close()
+		pass
+	def create_database(self,mode):
+		finmlb = open("mlb2014.txt",'r')
 		while 1:
 			fin_line = finmlb.readline()
 			if not fin_line:
@@ -23,7 +35,7 @@ class Bank:
 			os.system(command)
 			start = 1
 #			for ii in range(start,pagenumber+1):
-			db_file = str_league+str_year+".db"
+			db_file = mode+"_"+str_league+str_year+".db"
 			for ii in range(start,pagenumber+1):
 				outputtxt = "./"+str_league+str_year+"/"+str(ii)+"final.txt"
 				"""
@@ -85,10 +97,17 @@ class Bank:
 						team_h_shark = self.get_str_team_mlb(self.get_int_team_mlb(team_h))
 						team_a_shark = self.get_str_team_mlb(self.get_int_team_mlb(team_a))
 						month_shark = self.get_str_month_mlb(month)
+						su_h = 1 if (odds_h<odds_a and score_h>score_a) else 0
+						su_a = 1 if (odds_a<odds_h and score_a>score_h) else 0
+						run_h = 1 if (score_h-1>score_a) else 0
+						run_a = 1 if (score_a-1>score_h) else 0
+						ou = 1 if(score_h+score_a > score_ou) else (0 if (score_h+score_a == score_ou ) else -1)
+						"""
 						if season =="season":
 							url_oddsshark = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
 							print url_oddsshark
 							info_oddsshark = self.get_oddsshark(url_oddsshark)
+						"""
 						for home_itr in score_h_full:
 							if hhome > 0:
 								score_h_f += home_itr
@@ -101,16 +120,27 @@ class Bank:
 							else :
 								score_a_l += away_itr
 							aaway -= 1
-						insert_game = ((season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_f,score_a_f,score_h_l,score_a_l,score_ou,odds_h,odds_a,odds_o,odds_u))
+						if mode == "score":
+							insert_game = ((season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_f,score_a_f,score_h_l,score_a_l,score_ou,odds_h,odds_a,odds_o,odds_u))
+						elif mode =="su":
+							insert_game = ((season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u))
 						print insert_game
 						#cur.execute("""CREATE TABLE IF NOT EXISTS MLB(nid INTEGER primary key AUTOINCREMENT,day INT,month TEXT,year INT,\
 						with conn:
-							cur.execute("""CREATE TABLE IF NOT EXISTS MLB(nid INTEGER primary key AUTOINCREMENT,season TEXT,day INT,month TEXT,\
+							if mode == "score":
+								cur.execute("""CREATE TABLE IF NOT EXISTS MLB(nid INTEGER primary key AUTOINCREMENT,season TEXT,day INT,month TEXT,\
 										year INTEGER,time INTEGER, team_h TEXT, team_a TEXT, score_h INTEGER, score_a INTEGER,\
 										score_h_f INTEGER,score_a_f INTEGER,score_h_l INTEGER,score_a_l INTEGER,\
 										score_ou REAL, odds_h REAL,odds_a REAL,odds_o REAL,odds_u REAL)""")
-							cur.executemany("""INSERT INTO MLB(season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_f,score_a_f,score_h_l,score_a_l,score_ou,odds_h,odds_a,odds_o,odds_u)\
+								cur.executemany("""INSERT INTO MLB(season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_f,score_a_f,score_h_l,score_a_l,score_ou,odds_h,odds_a,odds_o,odds_u)\
 											VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",(insert_game,))
+							elif mode =="su":
+								cur.execute("""CREATE TABLE IF NOT EXISTS MLB_SU(nid INTEGER primary key AUTOINCREMENT,season TEXT,day INT,month TEXT,\
+										year INTEGER,time INTEGER, team_h TEXT, team_a TEXT, su_h INTEGER, su_a INTEGER, run_h INTEGER, run_a INTEGER, \
+                    ou INTEGER, odds_h REAL, odds_a REAL, odds_o REAL, odds_u REAL)""")
+								cur.executemany("""INSERT INTO MLB_SU(season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u)\
+											VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",(insert_game,))
+
 						conn.commit()
 						conn.close()
 					# print(fin_line)
@@ -205,6 +235,10 @@ class Bank:
 #		soup = bs(urllib2.urlopen(url).read())
 		print html2text.html2text(url)
 		raw_input()
+                test()
+                test()
+                test()
+                test()
 		pass
 	def convert_portal_shark(self,date,games,league):
 		pass
@@ -372,4 +406,7 @@ class Bank:
 	def get_str_games(self,games,league):
 		pass
 myBank = Bank()
-myBank.get_oddsportal()
+#myBank.get_oddsportal()
+#myBank.create_database("su")
+myBank.predict_day(18,"May",2014,"su")
+
