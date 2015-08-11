@@ -6,22 +6,204 @@ import BeautifulSoup as bs
 import sqlite3 as sql
 import html2text
 import urllib2
+import numpy
 class Bank:
 	db_file = ""
-	def __init__(self):
-		pass
-#	def get_oddsportal(self):
-	def predict_day(self,day,month,year,mode):
+	def __init__(self,mode):
 		finmlb = open("mlb2014.txt",'r')
 		fin_line = finmlb.readline()
 		str_league,str_year,pagenumber = fin_line.split("|")
-		db_file = mode+"_"+str_league+str_year+".db"
+		self.db_file = mode+"_"+str_league+str_year+".db"
+		pass
+#	def get_oddsportal(self):
+	def straight_win(self,nid,team_h,team_a,last_game,home_away):
+		"""
+		 pass two arguments
+		 if home team
+		 1: su when home team to every team
+		 2: su when home team to every team place match
+		 3: su when home team to away team
+		 4: su when home team to away team place match
+		[8] = su_h
+		[9] = su_a
+		[10] = run_h
+		[11] = run_a
+		[12] = ou
+		"""
+		conn = sql.connect(self.db_file)
+		return_list = [0.0 for ii in range(0,8)]
+		return_list_nom = [0.0 for ii in range(0,4)]
+		return_list_denom = [0.0 for ii in range(0,4)]
+		return_itr = [0,0,0,0]
+		cur_list = [conn.cursor() for ii in range(0,4)]
+		fetch = []
+		threshold = 3.1
+		return_itr_total = 0
+		if home_away:
+			cur_list[0].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh or team_a=:team_hh)",{"nidd":nid,"team_hh":team_h})
+			cur_list[1].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh)",{"nidd":nid,"team_hh":team_h})
+			cur_list[2].execute("select * from MLB_SU where nid>:nidd and ((team_h=:team_hh and team_a=:team_aa) or (team_h=:team_aa and team_a=:team_hh))",{"nidd":nid,"team_hh":team_h,"team_aa":team_a})
+			cur_list[3].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh and team_a=:team_aa)",{"nidd":nid,"team_hh":team_h,"team_aa":team_a})
+		else:
+			cur_list[0].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_aa or team_a=:team_aa)",{"nidd":nid,"team_aa":team_a})
+			cur_list[1].execute("select * from MLB_SU where nid>:nidd and (team_a=:team_aa)",{"nidd":nid,"team_aa":team_a})
+			cur_list[2].execute("select * from MLB_SU where nid>:nidd and ((team_h=:team_hh and team_a=:team_aa) or (team_h=:team_aa and team_a=:team_hh))",{"nidd":nid,"team_hh":team_h,"team_aa":team_a})
+			cur_list[3].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh and team_a=:team_aa)",{"nidd":nid,"team_hh":team_h,"team_aa":team_a})
+		fetch.append(cur_list[0].fetchone())
+		fetch.append(cur_list[1].fetchone())
+		fetch.append(cur_list[2].fetchone())
+		fetch.append(cur_list[3].fetchone())
+
+		while return_itr_total == 0:
+			for ii in range(0,4):
+				if not fetch[ii]:
+					return_itr[ii] = last_game
+					pass
+				elif return_itr[ii] < last_game:
+					if fetch[ii][9-home_away] > 0:
+						return_list[ii*2] += 1.0*fetch[ii][9-home_away]
+						return_list_nom[ii] += 1.0
+						return_list_denom[ii] += 1.0
+						return_itr[ii] += 1
+					elif fetch[ii][9-home_away] > -0.1:
+						pass
+					else:
+						return_list[ii*2+1] += 1.0*fetch[ii][9-home_away]
+						return_list_denom[ii] += 1.0
+						return_itr[ii] += 1
+						return_itr[ii] += 1
+				if return_itr[ii] == last_game:
+					pass
+				else:
+					fetch[ii] = cur_list[ii].fetchone()
+			return_itr_total = 1 if sum(return_itr) >= last_game*4 else 0
+		conn.close()
+		return_list_nom = numpy.array(return_list_nom)
+		return_list_denom = numpy.array(return_list_denom)
+		nonzeroes = numpy.where(return_list_denom>threshold)
+		zeroes = numpy.where(return_list_denom<threshold)
+		return_list_nom[nonzeroes] = return_list_nom[nonzeroes]/return_list_denom[nonzeroes]
+		return_list_nom[zeroes] = 0
+		return return_list_nom
+		return return_list
+	def over_under(self,nid,team_h,team_a,last_game,home_away):
+		"""
+		 pass two arguments
+		 if home team
+		 1: su when home team to every team
+		 2: su when home team to every team place match
+		 3: su when home team to away team
+		 4: su when home team to away team place match
+		[8] = su_h
+		[9] = su_a
+		[10] = run_h
+		[11] = run_a
+		[12] = ou
+		"""
+		conn = sql.connect(self.db_file)
+		return_list = [0.0 for ii in range(0,8)]
+		return_list_nom = [0.0 for ii in range(0,4)]
+		return_list_denom = [0.0 for ii in range(0,4)]
+		return_itr = [0,0,0,0]
+		cur_list = [conn.cursor() for ii in range(0,4)]
+		threshold = 3.1
+		fetch = []
+		return_itr_total = 0
+		if home_away:
+			cur_list[0].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh or team_a=:team_hh)",{"nidd":nid,"team_hh":team_h})
+			cur_list[1].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh)",{"nidd":nid,"team_hh":team_h})
+			cur_list[2].execute("select * from MLB_SU where nid>:nidd and ((team_h=:team_hh and team_a=:team_aa) or (team_h=:team_aa and team_a=:team_hh))",{"nidd":nid,"team_hh":team_h,"team_aa":team_a})
+			cur_list[3].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh and team_a=:team_aa)",{"nidd":nid,"team_hh":team_h,"team_aa":team_a})
+		else:
+			cur_list[0].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_aa or team_a=:team_aa)",{"nidd":nid,"team_aa":team_a})
+			cur_list[1].execute("select * from MLB_SU where nid>:nidd and (team_a=:team_aa)",{"nidd":nid,"team_aa":team_a})
+			cur_list[2].execute("select * from MLB_SU where nid>:nidd and ((team_h=:team_hh and team_a=:team_aa) or (team_h=:team_aa and team_a=:team_hh))",{"nidd":nid,"team_hh":team_h,"team_aa":team_a})
+			cur_list[3].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh and team_a=:team_aa)",{"nidd":nid,"team_hh":team_h,"team_aa":team_a})
+		fetch.append(cur_list[0].fetchone())
+		fetch.append(cur_list[1].fetchone())
+		fetch.append(cur_list[2].fetchone())
+		fetch.append(cur_list[3].fetchone())
+		while return_itr_total == 0:
+			for ii in range(0,4):
+				if not fetch[ii]:
+					return_itr[ii] = last_game
+					pass
+				elif return_itr[ii] < last_game:
+					if fetch[ii][12] > 0:
+						return_list[ii*2] += 1.0*fetch[ii][12]
+						return_list_nom[ii] += 1.0
+						return_list_denom[ii] += 1.0
+						return_itr[ii] += 1
+					elif fetch[ii][12] > -0.1:
+						pass
+					else:
+						return_list[ii*2+1] += 1.0*fetch[ii][12]
+						return_list_denom[ii] += 1.0
+						return_itr[ii] += 1
+				if return_itr[ii] == last_game:
+					pass
+				else:
+					fetch[ii] = cur_list[ii].fetchone()
+			return_itr_total = 1 if sum(return_itr) >= last_game*4 else 0
+		conn.close()
+		return_list_nom = numpy.array(return_list_nom)
+		return_list_denom = numpy.array(return_list_denom)
+		nonzeroes = numpy.where(return_list_denom > threshold)
+		zeroes = numpy.where(return_list_denom < threshold)
+		return_list_nom[nonzeroes] = return_list_nom[nonzeroes]/return_list_denom[nonzeroes]
+		return_list_nom[zeroes] = 0
+		return return_list_nom
+		return return_list
+
+	def predict_day(self,day,month,year,mode):
+		db_file = self.db_file
 		conn = sql.connect(db_file)
 		cur = conn.cursor()
 		cur.execute("select * from MLB_SU where day=:dayy and month=:monthh and year=:yearr",{"dayy":day,"monthh":month,"yearr":year})
+		yes_ou = 0.0
+		no_ou = 0.0
 		for fetch in  cur.fetchall():
-			print fetch[7]
+			predict = []
+			max_ratio = [0.0 for ii in range(0,4)]
+			min_ratio = [1.0 for ii in range(0,4)]
+			# 1 : SU Home
+			# 2 : SU Away
+			# 3 : OU Home
+			# 4 : OU Away
+			last_game = 5
+			predict.append(self.straight_win(fetch[0],fetch[6],fetch[7],last_game,1))
+			predict.append(self.straight_win(fetch[0],fetch[6],fetch[7],last_game,0))
+			predict.append(self.over_under(fetch[0],fetch[6],fetch[7],last_game,1))
+			predict.append(self.over_under(fetch[0],fetch[6],fetch[7],last_game,0))
+			for ii in range(0,4):
+				max_ratio[ii] = max(predict[ii][0],predict[ii][1],predict[ii][2],predict[ii][3])
+				min_ratio[ii] = min(predict[ii][0],predict[ii][1],predict[ii][2],predict[ii][3])
+			print predict,fetch
+			"""
+			last_game = 10
+			predict.append(self.straight_win(fetch[0],fetch[6],fetch[7],last_game,1))
+			predict.append(self.straight_win(fetch[0],fetch[6],fetch[7],last_game,0))
+			predict.append(self.over_under(fetch[0],fetch[6],fetch[7],last_game,1))
+			predict.append(self.over_under(fetch[0],fetch[6],fetch[7],last_game,0))
+			for ii in range(0,4):
+				max_ratio[ii] = max(max_ratio[ii],predict[ii][0],predict[ii][1],predict[ii][2],predict[ii][3])
+				min_ratio[ii] = min(max_ratio[ii],predict[ii][0],predict[ii][1],predict[ii][2],predict[ii][3])
+			if max_ratio[2] > 0.59 and max_ratio[3] > 0.59:
+				if fetch[12] == 1:
+					yes_ou += 1
+				elif fetch[12] == -1:
+					no_ou += 1
+			"""
+			"""
+			elif min_ratio[2] < 0.39 and min_ratio[3] < 0.39:
+				if fetch[12] == -1:
+					yes_ou += 1
+				elif fetch[12] == 1:
+					no_ou += 1
+			"""
+#			print yes_ou,no_ou,numpy.array(max_ratio),fetch
 		conn.close()
+		return [yes_ou,no_ou]
 		pass
 	def create_database(self,mode):
 		finmlb = open("mlb2014.txt",'r')
@@ -35,7 +217,7 @@ class Bank:
 			os.system(command)
 			start = 1
 #			for ii in range(start,pagenumber+1):
-			db_file = mode+"_"+str_league+str_year+".db"
+			db_file = self.db_file
 			for ii in range(start,pagenumber+1):
 				outputtxt = "./"+str_league+str_year+"/"+str(ii)+"final.txt"
 				"""
@@ -137,7 +319,7 @@ class Bank:
 							elif mode =="su":
 								cur.execute("""CREATE TABLE IF NOT EXISTS MLB_SU(nid INTEGER primary key AUTOINCREMENT,season TEXT,day INT,month TEXT,\
 										year INTEGER,time INTEGER, team_h TEXT, team_a TEXT, su_h INTEGER, su_a INTEGER, run_h INTEGER, run_a INTEGER, \
-                    ou INTEGER, odds_h REAL, odds_a REAL, odds_o REAL, odds_u REAL)""")
+					ou INTEGER, odds_h REAL, odds_a REAL, odds_o REAL, odds_u REAL)""")
 								cur.executemany("""INSERT INTO MLB_SU(season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u)\
 											VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",(insert_game,))
 
@@ -235,10 +417,6 @@ class Bank:
 #		soup = bs(urllib2.urlopen(url).read())
 		print html2text.html2text(url)
 		raw_input()
-                test()
-                test()
-                test()
-                test()
 		pass
 	def convert_portal_shark(self,date,games,league):
 		pass
@@ -405,8 +583,16 @@ class Bank:
 		pass
 	def get_str_games(self,games,league):
 		pass
-myBank = Bank()
+numpy.set_printoptions(precision=2,suppress=True)
+myBank = Bank("su")
 #myBank.get_oddsportal()
 #myBank.create_database("su")
-myBank.predict_day(18,"May",2014,"su")
+yes_total = 0.0
+no_total = 0.0
+for ii in range(11,12):
+	yes,no = myBank.predict_day(ii,"Sep",2014,"su")
+	yes_total += yes
+	no_total += no
+	print yes,no
+print yes_total,no_total
 
