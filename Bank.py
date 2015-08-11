@@ -97,11 +97,11 @@ class Bank:
 						team_h_shark = self.get_str_team_mlb(self.get_int_team_mlb(team_h))
 						team_a_shark = self.get_str_team_mlb(self.get_int_team_mlb(team_a))
 						month_shark = self.get_str_month_mlb(month)
-						su_h = 1 if (odds_h<odds_a and score_h>score_a) else 0
-						su_a = 1 if (odds_a<odds_h and score_a>score_h) else 0
-						run_h = 1 if (score_h-1>score_a) else 0
-						run_a = 1 if (score_a-1>score_h) else 0
-						ou = 1 if(score_h+score_a > score_ou) else (0 if (score_h+score_a == score_ou ) else -1)
+						su_h  = 1 if (odds_h<odds_a and score_h>score_a) else (-1 if(odds_h<odds_a and score_h<score_a) else 0)
+						su_a  = 1 if (odds_a<odds_h and score_a>score_h) else (-1 if(odds_a<odds_h and score_a<score_h) else 0)
+						run_h = 1 if (odds_h<odds_a and score_h-1>score_a) else (-1 if(odds_h<odds_a and score_h-1<score_a) else 0)
+						run_a = 1 if (odds_a<odds_h and score_a-1>score_h) else (-1 if(odds_a<odds_h and score_a-1<score_h) else 0)
+						ou    = 1 if(score_h+score_a > score_ou) else (0 if (score_h+score_a == score_ou ) else -1)
 						"""
 						if season =="season":
 							url_oddsshark = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
