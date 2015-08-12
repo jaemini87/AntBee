@@ -293,8 +293,9 @@ class Bank:
 						con_o = 0
 						con_u = 0
 						if season =="season":
+							#day+=1
 							url_oddsshark = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
-							con_w_a,con_w_h,con_o,con_u = self.get_oddsshark(url_oddsshark)
+							con_w_a,con_w_h,con_o,con_u = self.get_oddsshark(team_a_shark,team_h_shark,month_shark,day,year)
 						for home_itr in score_h_full:
 							if hhome > 0:
 								score_h_f += home_itr
@@ -417,16 +418,33 @@ class Bank:
 			odds_a = 1.0 + int(odds_a_denom) * 1.0 / int(odds_a_nom)
 		return [cur_time,int(score_h),int(score_a),odds_h,odds_a,score_ou,odds_o,odds_u,score_h_full,score_a_full]
 		pass
-	def get_oddsshark(self,url):
-		r =  html2text.html2text(url)
-		soup = BeautifulSoup(urllib2.urlopen(url).read(),"html.parser")
+	def get_oddsshark(self,team_a_shark,team_h_shark,month_shark,day,year):
+		url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
+		print url
+		try:
+			rr = urllib2.urlopen(url)
+		except urllib2.HTTPError,e:
+			print e.code
+			if day == 1:
+				url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(31)+"-"+str(year)
+				try:
+					rr = urllib2.urlopen(url)
+				except urllib2.HTTPError,e:
+					url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(30)+"-"+str(year)
+					rr = urllib2.urlopen(url)
+			else:
+				url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day-1)+"-"+str(year)
+				rr = urllib2.urlopen(url)
+		soup = BeautifulSoup(rr.read(),"lxml")
 		spann = soup.find_all('span',{'class':'consensus_percent'})
 		return_list = []
 		for span in spann:
 			ints = ""
 			for char in span.get_text():
+				if len(ints) > 1:
+					break
 				if char.isdigit():
-					ints+=char
+					ints += char
 			return_list.append(int(ints))
 		return return_list
 		pass
