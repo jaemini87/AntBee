@@ -288,11 +288,13 @@ class Bank:
 						run_h = 1 if (odds_h<odds_a and score_h-1>score_a) else (-1 if(odds_h<odds_a and score_h-1<score_a) else 0)
 						run_a = 1 if (odds_a<odds_h and score_a-1>score_h) else (-1 if(odds_a<odds_h and score_a-1<score_h) else 0)
 						ou    = 1 if(score_h+score_a > score_ou) else (0 if (score_h+score_a == score_ou ) else -1)
+						con_w_h = 0
+						con_w_a = 0
+						con_o = 0
+						con_u = 0
 						if season =="season":
 							url_oddsshark = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
-							print url_oddsshark
-							info_oddsshark = self.get_oddsshark(url_oddsshark)
-							raw_input()
+							con_w_a,con_w_h,con_o,con_u = self.get_oddsshark(url_oddsshark)
 						for home_itr in score_h_full:
 							if hhome > 0:
 								score_h_f += home_itr
@@ -308,7 +310,7 @@ class Bank:
 						if mode == "score":
 							insert_game = ((season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_f,score_a_f,score_h_l,score_a_l,score_ou,odds_h,odds_a,odds_o,odds_u))
 						elif mode =="su":
-							insert_game = ((season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u))
+							insert_game = ((season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u,con_w_h,con_w_a,con_o,con_u))
 						print insert_game
 						#cur.execute("""CREATE TABLE IF NOT EXISTS MLB(nid INTEGER primary key AUTOINCREMENT,day INT,month TEXT,year INT,\
 						with conn:
@@ -322,9 +324,9 @@ class Bank:
 							elif mode =="su":
 								cur.execute("""CREATE TABLE IF NOT EXISTS MLB_SU(nid INTEGER primary key AUTOINCREMENT,season TEXT,day INT,month TEXT,\
 										year INTEGER,time INTEGER, team_h TEXT, team_a TEXT, su_h INTEGER, su_a INTEGER, run_h INTEGER, run_a INTEGER, \
-					ou INTEGER, odds_h REAL, odds_a REAL, odds_o REAL, odds_u REAL)""")
-								cur.executemany("""INSERT INTO MLB_SU(season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u)\
-											VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",(insert_game,))
+										ou INTEGER, odds_h REAL, odds_a REAL, odds_o REAL, odds_u REAL,con_w_h INTEGER,con_w_a INTEGER,con_o INTEGER, con_u INTEGER)""")
+								cur.executemany("""INSERT INTO MLB_SU(season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u,con_w_h,con_w_a,con_o,con_u)\
+											VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",(insert_game,))
 
 						conn.commit()
 						conn.close()
@@ -416,14 +418,17 @@ class Bank:
 		return [cur_time,int(score_h),int(score_a),odds_h,odds_a,score_ou,odds_o,odds_u,score_h_full,score_a_full]
 		pass
 	def get_oddsshark(self,url):
-		print url
 		r =  html2text.html2text(url)
-		soup = BeautifulSoup(urllib2.urlopen(url).read())
+		soup = BeautifulSoup(urllib2.urlopen(url).read(),"html.parser")
 		spann = soup.find_all('span',{'class':'consensus_percent'})
+		return_list = []
 		for span in spann:
-			print span.get_text()
-		print html2text.html2text(url)
-		raw_input()
+			ints = ""
+			for char in span.get_text():
+				if char.isdigit():
+					ints+=char
+			return_list.append(int(ints))
+		return return_list
 		pass
 	def convert_portal_shark(self,date,games,league):
 		pass
@@ -494,8 +499,8 @@ class Bank:
 	def get_str_team_mlb(self,name):
 		if name == 0:
 			return "baltimore"
-		elif name == "Boston Red Sox":
-			return 1
+		elif name == 1:
+			return "boston"
 		elif name == 2:
 			return "chicago"
 		elif name == 3:
@@ -596,10 +601,11 @@ myBank.create_database("su")
 yes_total = 0.0
 no_total = 0.0
 #11 worst
+"""
 for ii in range(1,30):
 	yes,no = myBank.predict_day(ii,"May",2014,"su")
 	yes_total += yes
 	no_total += no
 	print yes,no
 print yes_total,no_total,yes_total/(yes_total+no_total)
-
+"""
