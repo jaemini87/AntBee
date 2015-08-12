@@ -1,12 +1,12 @@
 __author__ = 'jaemin'
 import sys
 import os
-import PyPDF2
-import BeautifulSoup as bs
 import sqlite3 as sql
+import numpy
+#import BeautifulSoup as bs
+from bs4 import BeautifulSoup
 import html2text
 import urllib2
-import numpy
 class Bank:
 	db_file = ""
 	def __init__(self,mode):
@@ -38,7 +38,7 @@ class Bank:
 		cur_list = [conn.cursor() for ii in range(0,4)]
 		fetch = []
 		threshold = 3.1
-		return_itr_total = 0
+		max_ratio = [1 for ii in range(0,4)]
 		if home_away:
 			cur_list[0].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh or team_a=:team_hh)",{"nidd":nid,"team_hh":team_h})
 			cur_list[1].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh)",{"nidd":nid,"team_hh":team_h})
@@ -54,12 +54,14 @@ class Bank:
 		fetch.append(cur_list[2].fetchone())
 		fetch.append(cur_list[3].fetchone())
 
-		while return_itr_total == 0:
+		while sum(max_ratio) > 0:
 			for ii in range(0,4):
 				if not fetch[ii]:
-					return_itr[ii] = last_game
+					max_ratio[ii] = 0
 					pass
-				elif return_itr[ii] < last_game:
+				elif return_list[ii*2+1] == -1 and fetch[ii][9-home_away] < -0.1:
+					max_ratio[ii] = 0
+				elif max_ratio[ii] == 1:
 					if fetch[ii][9-home_away] > 0:
 						return_list[ii*2] += 1.0*fetch[ii][9-home_away]
 						return_list_nom[ii] += 1.0
@@ -72,11 +74,11 @@ class Bank:
 						return_list_denom[ii] += 1.0
 						return_itr[ii] += 1
 						return_itr[ii] += 1
-				if return_itr[ii] == last_game:
+				if max_ratio[ii] == 0:
 					pass
 				else:
 					fetch[ii] = cur_list[ii].fetchone()
-			return_itr_total = 1 if sum(return_itr) >= last_game*4 else 0
+
 		conn.close()
 		return_list_nom = numpy.array(return_list_nom)
 		return_list_denom = numpy.array(return_list_denom)
@@ -108,7 +110,7 @@ class Bank:
 		cur_list = [conn.cursor() for ii in range(0,4)]
 		threshold = 3.1
 		fetch = []
-		return_itr_total = 0
+		max_ratio = [1 for ii in range(0,4)]
 		if home_away:
 			cur_list[0].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh or team_a=:team_hh)",{"nidd":nid,"team_hh":team_h})
 			cur_list[1].execute("select * from MLB_SU where nid>:nidd and (team_h=:team_hh)",{"nidd":nid,"team_hh":team_h})
@@ -123,12 +125,14 @@ class Bank:
 		fetch.append(cur_list[1].fetchone())
 		fetch.append(cur_list[2].fetchone())
 		fetch.append(cur_list[3].fetchone())
-		while return_itr_total == 0:
+		while sum(max_ratio) > 0:
 			for ii in range(0,4):
 				if not fetch[ii]:
-					return_itr[ii] = last_game
+					max_ratio[ii] = 0
 					pass
-				elif return_itr[ii] < last_game:
+				elif return_list[ii*2+1] == -1 and fetch[ii][12] < -0.1:
+					max_ratio[ii] = 0
+				elif max_ratio[ii] == 1:
 					if fetch[ii][12] > 0:
 						return_list[ii*2] += 1.0*fetch[ii][12]
 						return_list_nom[ii] += 1.0
@@ -140,11 +144,11 @@ class Bank:
 						return_list[ii*2+1] += 1.0*fetch[ii][12]
 						return_list_denom[ii] += 1.0
 						return_itr[ii] += 1
-				if return_itr[ii] == last_game:
+						return_itr[ii] += 1
+				if max_ratio[ii] == 0:
 					pass
 				else:
 					fetch[ii] = cur_list[ii].fetchone()
-			return_itr_total = 1 if sum(return_itr) >= last_game*4 else 0
 		conn.close()
 		return_list_nom = numpy.array(return_list_nom)
 		return_list_denom = numpy.array(return_list_denom)
@@ -170,7 +174,7 @@ class Bank:
 			# 2 : SU Away
 			# 3 : OU Home
 			# 4 : OU Away
-			last_game = 5
+			last_game = 10
 			predict.append(self.straight_win(fetch[0],fetch[6],fetch[7],last_game,1))
 			predict.append(self.straight_win(fetch[0],fetch[6],fetch[7],last_game,0))
 			predict.append(self.over_under(fetch[0],fetch[6],fetch[7],last_game,1))
@@ -178,7 +182,7 @@ class Bank:
 			for ii in range(0,4):
 				max_ratio[ii] = max(predict[ii][0],predict[ii][1],predict[ii][2],predict[ii][3])
 				min_ratio[ii] = min(predict[ii][0],predict[ii][1],predict[ii][2],predict[ii][3])
-			print predict,fetch
+#			print predict,fetch
 			"""
 			last_game = 10
 			predict.append(self.straight_win(fetch[0],fetch[6],fetch[7],last_game,1))
@@ -188,12 +192,12 @@ class Bank:
 			for ii in range(0,4):
 				max_ratio[ii] = max(max_ratio[ii],predict[ii][0],predict[ii][1],predict[ii][2],predict[ii][3])
 				min_ratio[ii] = min(max_ratio[ii],predict[ii][0],predict[ii][1],predict[ii][2],predict[ii][3])
-			if max_ratio[2] > 0.59 and max_ratio[3] > 0.59:
+			"""
+			if max_ratio[2] > 0.7 and max_ratio[3] > 0.7:
 				if fetch[12] == 1:
 					yes_ou += 1
 				elif fetch[12] == -1:
 					no_ou += 1
-			"""
 			"""
 			elif min_ratio[2] < 0.39 and min_ratio[3] < 0.39:
 				if fetch[12] == -1:
@@ -284,12 +288,11 @@ class Bank:
 						run_h = 1 if (odds_h<odds_a and score_h-1>score_a) else (-1 if(odds_h<odds_a and score_h-1<score_a) else 0)
 						run_a = 1 if (odds_a<odds_h and score_a-1>score_h) else (-1 if(odds_a<odds_h and score_a-1<score_h) else 0)
 						ou    = 1 if(score_h+score_a > score_ou) else (0 if (score_h+score_a == score_ou ) else -1)
-						"""
 						if season =="season":
 							url_oddsshark = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
 							print url_oddsshark
 							info_oddsshark = self.get_oddsshark(url_oddsshark)
-						"""
+							raw_input()
 						for home_itr in score_h_full:
 							if hhome > 0:
 								score_h_f += home_itr
@@ -414,7 +417,11 @@ class Bank:
 		pass
 	def get_oddsshark(self,url):
 		print url
-#		soup = bs(urllib2.urlopen(url).read())
+		r =  html2text.html2text(url)
+		soup = BeautifulSoup(urllib2.urlopen(url).read())
+		spann = soup.find_all('span',{'class':'consensus_percent'})
+		for span in spann:
+			print span.get_text()
 		print html2text.html2text(url)
 		raw_input()
 		pass
@@ -585,14 +592,14 @@ class Bank:
 		pass
 numpy.set_printoptions(precision=2,suppress=True)
 myBank = Bank("su")
-#myBank.get_oddsportal()
-#myBank.create_database("su")
+myBank.create_database("su")
 yes_total = 0.0
 no_total = 0.0
-for ii in range(11,12):
-	yes,no = myBank.predict_day(ii,"Sep",2014,"su")
+#11 worst
+for ii in range(1,30):
+	yes,no = myBank.predict_day(ii,"May",2014,"su")
 	yes_total += yes
 	no_total += no
 	print yes,no
-print yes_total,no_total
+print yes_total,no_total,yes_total/(yes_total+no_total)
 
