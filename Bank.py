@@ -3,8 +3,11 @@ import sys
 import os
 import sqlite3 as sql
 import numpy
+from lxml import html
+import requests
+
 #import BeautifulSoup as bs
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup,SoupStrainer
 import html2text
 import urllib2
 class Bank:
@@ -16,6 +19,13 @@ class Bank:
 		self.db_file = mode+"_"+str_league+str_year+".db"
 		pass
 #	def get_oddsportal(self):
+	def print_db(self):
+		db_file = self.db_file
+		conn = sql.connect(db_file)
+		cur = conn.cursor()
+		cur.execute("select * from MLB_SU")
+		for pp in cur:
+			print pp
 	def straight_win(self,nid,team_h,team_a,last_game,home_away):
 		"""
 		 pass two arguments
@@ -219,7 +229,7 @@ class Bank:
 			pagenumber = int(pagenumber)
 			command = "mkdir "+ str_league+str_year
 			os.system(command)
-			start = 1
+			start = 2
 #			for ii in range(start,pagenumber+1):
 			db_file = self.db_file
 			for ii in range(start,pagenumber+1):
@@ -283,19 +293,26 @@ class Bank:
 						team_h_shark = self.get_str_team_mlb(self.get_int_team_mlb(team_h))
 						team_a_shark = self.get_str_team_mlb(self.get_int_team_mlb(team_a))
 						month_shark = self.get_str_month_mlb(month)
+						stats_list_28 = []
 						su_h  = 1 if (odds_h<odds_a and score_h>score_a) else (-1 if(odds_h<odds_a and score_h<score_a) else 0)
 						su_a  = 1 if (odds_a<odds_h and score_a>score_h) else (-1 if(odds_a<odds_h and score_a<score_h) else 0)
 						run_h = 1 if (odds_h<odds_a and score_h-1>score_a) else (-1 if(odds_h<odds_a and score_h-1<score_a) else 0)
 						run_a = 1 if (odds_a<odds_h and score_a-1>score_h) else (-1 if(odds_a<odds_h and score_a-1<score_h) else 0)
 						ou    = 1 if(score_h+score_a > score_ou) else (0 if (score_h+score_a == score_ou ) else -1)
-						con_w_h = 0
-						con_w_a = 0
-						con_o = 0
-						con_u = 0
+						for ii in range(0,6):
+							stats_list_28.append(0)
+						for ff in range(0,22):
+							stats_list_28.append(0.0)
 						if season =="season":
 							#day+=1
-							url_oddsshark = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
-							con_w_a,con_w_h,con_o,con_u = self.get_oddsshark(team_a_shark,team_h_shark,month_shark,day,year)
+							"""
+							con_w_a,con_w_h,con_o,con_u,\
+							era_h,era_a,start_era_h,start_era_a,\
+							h_earn_h,h_earn_a,h_allow_h,h_allow_a,\
+							bull_h,bull_a,b_off_h,b_off_a,b_def_h,b_def_a = self.get_oddsshark_lxml(team_a_shark,team_h_shark,month_shark,day,year)
+							"""
+							stats_list_28 = self.get_oddsshark_lxml(team_a_shark,team_h_shark,month_shark,day,year)
+#							con_w_a,con_w_h,con_o,con_u = self.get_oddsshark(team_a_shark,team_h_shark,month_shark,day,year)
 						for home_itr in score_h_full:
 							if hhome > 0:
 								score_h_f += home_itr
@@ -311,7 +328,14 @@ class Bank:
 						if mode == "score":
 							insert_game = ((season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_f,score_a_f,score_h_l,score_a_l,score_ou,odds_h,odds_a,odds_o,odds_u))
 						elif mode =="su":
-							insert_game = ((season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u,con_w_h,con_w_a,con_o,con_u))
+							insert_game = (season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u)
+						elif mode =="all":
+							insert_game = [season,day,month,year,time,team_h,team_a,\
+											su_h,su_a,run_h,run_a,ou,\
+											odds_h,odds_a,odds_o,odds_u
+											]
+							for stat in stats_list_28:
+								insert_game.append(stat)
 						print insert_game
 						#cur.execute("""CREATE TABLE IF NOT EXISTS MLB(nid INTEGER primary key AUTOINCREMENT,day INT,month TEXT,year INT,\
 						with conn:
@@ -327,7 +351,16 @@ class Bank:
 										year INTEGER,time INTEGER, team_h TEXT, team_a TEXT, su_h INTEGER, su_a INTEGER, run_h INTEGER, run_a INTEGER, \
 										ou INTEGER, odds_h REAL, odds_a REAL, odds_o REAL, odds_u REAL,con_w_h INTEGER,con_w_a INTEGER,con_o INTEGER, con_u INTEGER)""")
 								cur.executemany("""INSERT INTO MLB_SU(season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u,con_w_h,con_w_a,con_o,con_u)\
-											VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",(insert_game,))
+											VALUES(?,?,?,?,?, ?,?,?,?,?, ?,?,?,?,? ,?,?,?,?,?)""",(insert_game,))
+							elif mode =="all":
+								cur.execute("""CREATE TABLE IF NOT EXISTS MLB_SU(nid INTEGER primary key AUTOINCREMENT,season TEXT,day INT,month TEXT,\
+										year INTEGER,time INTEGER, team_h TEXT, team_a TEXT, su_h INTEGER, su_a INTEGER, run_h INTEGER, run_a INTEGER,\
+										ou INTEGER, odds_h REAL, odds_a REAL, odds_o REAL, odds_u REAL, P0 INTEGER, P1 INTEGER, C0 INTEGER, C1 INTEGER,\
+										C2 INTEGER ,C3 INTEGER, S0 REAL, S1 REAL, S2 REAL, S3 REAL, S4 REAL, S5 REAL, S6 REAL, S7 REAL, S8 REAL, S9 REAL,\
+										S10 REAL, S11 REAL, S12 REAL, S13 REAL, S14 REAL, S15 REAL, S16 REAL ,S17 REAL, S18 REAL,S19 REAL, S20 REAL, S21 REAL)""")
+								cur.executemany("""INSERT INTO MLB_SU(season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u,\
+												P0,P1,C0,C1,C2,C3,S0,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14,S15,S16,S17,S18,S19,S20,S21)\
+												VALUES(?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?)""",(insert_game,))
 
 						conn.commit()
 						conn.close()
@@ -418,11 +451,81 @@ class Bank:
 			odds_a = 1.0 + int(odds_a_denom) * 1.0 / int(odds_a_nom)
 		return [cur_time,int(score_h),int(score_a),odds_h,odds_a,score_ou,odds_o,odds_u,score_h_full,score_a_full]
 		pass
+	def get_oddsshark_lxml(self,team_a_shark,team_h_shark,month_shark,day,year):
+		#power ranking 2 elements
+		#stats 22 elements
+		#consensus 4 elements
+		return_list =[]
+		for ii in range(0,6):
+			return_list.append(0)
+		for ff in range(0,22):
+			return_list.append(0.0)
+		if str(team_h_shark) == "-1" or str(team_a_shark) == "-1":
+			return return_list
+		while 1:
+			url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
+			print url
+			try:
+				page = requests.get(url)
+			except requests.HTTPError,e:
+				print e.code
+				page = requests.get(url)
+
+			tree = html.fromstring(page.text)
+
+			percent = tree.xpath('//span[@class="consensus_percent"]/text()')
+			power = tree.xpath('//span[@class="score"]/text()')
+			home = tree.xpath('//span[@class="home"]/text()')
+			away = tree.xpath('//span[@class="away"]/text()')
+			home_f = map(float,home)
+			away_f = map(float,away)
+			ii=0
+			for span in power:
+				if ii == 2:
+					break
+				ints = ""
+				for char in span:
+					if len(ints) > 1:
+						break
+					if char.isdigit():
+						ints += char
+				return_list[ii] = int(ints)
+				ii+=1
+			ii=2
+			for span in percent:
+				ints = ""
+				for char in span:
+					if len(ints) > 1:
+						break
+					if char.isdigit():
+						ints += char
+				return_list[ii] = int(ints)
+				ii+=1
+			return_list[6:17] = home_f[0:11]
+			return_list[17:28] = away_f[0:11]
+			print return_list
+			if len(return_list) != 28:
+				if day == 1:
+					return_list =[]
+					for ii in range(0,6):
+						return_list.append(0)
+					for ff in range(0,22):
+						return_list.append(0.0)
+					return return_list
+				else:
+					day -= 1
+			else:
+				return return_list
+
 	def get_oddsshark(self,team_a_shark,team_h_shark,month_shark,day,year):
+		if str(team_h_shark) == "-1" or str(team_a_shark) == "-1":
+			return [50,50,50,50]
 		url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
 		print url
+#		page = requests.get(url)
 		try:
 			rr = urllib2.urlopen(url)
+			print"urllib2.open"
 		except urllib2.HTTPError,e:
 			print e.code
 			if day == 1:
@@ -430,13 +533,24 @@ class Bank:
 				try:
 					rr = urllib2.urlopen(url)
 				except urllib2.HTTPError,e:
+					print e.code
 					url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(30)+"-"+str(year)
-					rr = urllib2.urlopen(url)
+					try:
+						rr = urllib2.urlopen(url)
+					except urllib2.HTTPError,e:
+						return [50,50,50,50]
 			else:
 				url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day-1)+"-"+str(year)
-				rr = urllib2.urlopen(url)
-		soup = BeautifulSoup(rr.read(),"lxml")
+				try:
+					rr = urllib2.urlopen(url)
+				except urllib2.HTTPError,e:
+					return [50,50,50,50]
+		links=SoupStrainer("span")
+		print "SoupStrainer"
+		soup = BeautifulSoup(rr.read(),"lxml",parse_only=links)
+		print "BS"
 		spann = soup.find_all('span',{'class':'consensus_percent'})
+		print "Findall"
 		return_list = []
 		for span in spann:
 			ints = ""
@@ -446,6 +560,7 @@ class Bank:
 				if char.isdigit():
 					ints += char
 			return_list.append(int(ints))
+		print"FOR"
 		return return_list
 		pass
 	def convert_portal_shark(self,date,games,league):
@@ -614,16 +729,18 @@ class Bank:
 	def get_str_games(self,games,league):
 		pass
 numpy.set_printoptions(precision=2,suppress=True)
-myBank = Bank("su")
-myBank.create_database("su")
+
+myBank = Bank("all")
+#myBank.create_database("all")
 yes_total = 0.0
 no_total = 0.0
+#myBank.print_db()
 #11 worst
-"""
+#"""
 for ii in range(1,30):
 	yes,no = myBank.predict_day(ii,"May",2014,"su")
 	yes_total += yes
 	no_total += no
 	print yes,no
 print yes_total,no_total,yes_total/(yes_total+no_total)
-"""
+#"""
