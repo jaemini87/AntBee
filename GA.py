@@ -3,6 +3,7 @@ __author__ = 'JAEMIN'
 """
 #!/usr/bin/python
 from multiprocessing import Process,Value,Array,Lock,Queue,sharedctypes
+import sqlite3 as sql
 import random
 import os
 import numpy as np
@@ -83,237 +84,419 @@ class GeneticFunctions(object):
 		"""
 		return chromosome
 	pass
-if __name__ == "__main__":
-	"""
-	example: MLB_Analysis
-	chromo = [h_a,h_b,h_c,h_d,odds_h,a_a,a_b,a_c,a_d,odds_a]
-	all the chromosome is 0-1 range
-	  limit = computation number
-	  size  = population size
-	"""
-	class MLB_Analysis(GeneticFunctions):
-		def __init__(self,db_file,limit=2000,size=100,prob_crossover=0.9, prob_mutation=0.1,chromo_size = 28):
-			self.db_file = db_file
-			self.counter = 0
-			self.limit = limit
-			self.size = size
-			self.chromo_size = chromo_size
-			#				self.chromo_size = 17
-			#self.chromo_size = 22*int(sys.argv[3])
-			self.prob_crossover = prob_crossover
-			self.prob_mutation = prob_mutation
-			self.max_fig = -10000000.0
-			self.min_fig = 	10000000.0
-			self.avg_fig = 0.0
-			"""
-			self.MLB2012 = Gene_File_Parser_OU("mlb2012.txt.mid.rev")
-			self.MLB2013 = Gene_File_Parser_OU("mlb2013.txt.mid.rev")
-			self.MLB2014 = Gene_File_Parser_OU("mlb2014.txt.mid.rev")
-			self.MLB_File_List = [self.MLB2012,self.MLB2013,self.MLB2014]
-			"""
-			pass
-		# GeneticFunctions interface impls
-		def probability_crossover(self):
-			return self.prob_crossover
-		def probability_mutation(self):
-			return self.prob_mutation
-		def initial(self):
-			return [self.random_chromo() for j in range(self.size)]
-		def fitness(self,population,EM):
-			# MLB team analysis goes here we calculate every game and outputs bank total budjet
-			# greater is better
-			argument = int(sys.argv[1])
-			TrainDurat = 150
-			ExecDurat = 150
-			TrainStart = 1500
-			pid_num = 10
-			pop_len = len(population)/pid_num
-			results_list = []
-			for iterr in range(0,pop_len):
-				random_args = [(random.randint(0,0),random.randint(0,TrainStart)) for ii in range(0,pid_num)]
-				random_lists = []
-				bet_cond = int(sys.argv[2])
-				for ii in random_args:
-					ii_1,ii_2 = ii
+class MLB_Analysis(GeneticFunctions):
+	def __init__(self,db_file,limit=2000,size=100,prob_crossover=0.9, prob_mutation=0.1,chromo_size = 28):
+		self.db_file = db_file
+		self.counter = 0
+		self.limit = limit
+		self.size = size
+		self.chromo_size = chromo_size
+		#				self.chromo_size = 17
+		#self.chromo_size = 22*int(sys.argv[3])
+		self.prob_crossover = prob_crossover
+		self.prob_mutation = prob_mutation
+		self.max_fig = -10000000.0
+		self.min_fig = 	10000000.0
+		self.avg_fig = 0.0
+		"""
+		self.MLB2012 = Gene_File_Parser_OU("mlb2012.txt.mid.rev")
+		self.MLB2013 = Gene_File_Parser_OU("mlb2013.txt.mid.rev")
+		self.MLB2014 = Gene_File_Parser_OU("mlb2014.txt.mid.rev")
+		self.MLB_File_List = [self.MLB2012,self.MLB2013,self.MLB2014]
+		"""
+		pass
+	# GeneticFunctions interface impls
+	def probability_crossover(self):
+		return self.prob_crossover
+	def probability_mutation(self):
+		return self.prob_mutation
+	def initial(self):
+		return [self.random_chromo() for j in range(self.size)]
+	def fitness(self,population,EM):
+		# MLB team analysis goes here we calculate every game and outputs bank total budjet
+		# greater is better
+		argument = int(sys.argv[1])
+		TrainDurat = 150
+		ExecDurat = 150
+		TrainStart = 1500
+		pid_num = 10
+		pop_len = len(population)/pid_num
+		results_list = []
+		for iterr in range(0,pop_len):
+			random_args = [(random.randint(0,0),random.randint(0,TrainStart)) for ii in range(0,pid_num)]
+			random_lists = []
+			bet_cond = int(sys.argv[2])
+			for ii in random_args:
+				ii_1,ii_2 = ii
 #					tmp_list = self.MLB_File_List[ii_1]
-					random_lists.append([ii_2,ii_2+TrainDurat+ExecDurat])
-				result_queue = Queue()
-				pid_t = []
-				for jjjj in range(0,len(random_lists)):
-					pid_t.append(Process(target = Training, args =(result_queue,population[jjjj+iterr*pid_num],random_lists[jjjj],argument,TrainDurat,bet_cond,EM)))
-				#			pid_t = [Process(target = Gene_Multiprocess_Shared, args =(result_queue,chromo,File_List,argument,TrainDurat,bet_cond,EM)) for File_List in random_lists]
-				for pid_t_start in pid_t:
-					pid_t_start.start()
-				for pid_t_join in pid_t:
-					pid_t_join.join()
-				for kkkk in range(0,len(pid_t)):
-					results_list.append(result_queue.get())
-				for pid_t_ter in pid_t:
-					pid_t_ter.terminate()
-			"""
-			new_results = 0.0
-			for ii in results:
-				if(ii < 0):
-					new_results += ii
-				else:
-					 new_results += ii
-			"""
-			#				return new_results/len(random_lists)
-			return results_list
+				random_lists.append([ii_2,ii_2+TrainDurat+ExecDurat])
+			result_queue = Queue()
+			pid_t = []
+			for jjjj in range(0,len(random_lists)):
+				pid_t.append(Process(target = Training, args =(result_queue,population[jjjj+iterr*pid_num],random_lists[jjjj],argument,TrainDurat,bet_cond,EM)))
+			#			pid_t = [Process(target = Gene_Multiprocess_Shared, args =(result_queue,chromo,File_List,argument,TrainDurat,bet_cond,EM)) for File_List in random_lists]
+			for pid_t_start in pid_t:
+				pid_t_start.start()
+			for pid_t_join in pid_t:
+				pid_t_join.join()
+			for kkkk in range(0,len(pid_t)):
+				results_list.append(result_queue.get())
+			for pid_t_ter in pid_t:
+				pid_t_ter.terminate()
+		"""
+		new_results = 0.0
+		for ii in results:
+			if(ii < 0):
+				new_results += ii
+			else:
+				 new_results += ii
+		"""
+		#				return new_results/len(random_lists)
+		return results_list
 
-		def check_stop(self, fits_populations,EM):
-			fout = open(str(sys.argv[4]),'a')
-			self.counter += 1
-			sort_population = iter(reversed(sorted(fits_populations)))
-			sort_population2 = iter((sorted(fits_populations)))
-			cnt = 0
+	def check_stop(self, fits_populations,EM):
+		fout = open(str(sys.argv[4]),'a')
+		self.counter += 1
+		sort_population = iter(reversed(sorted(fits_populations)))
+		sort_population2 = iter((sorted(fits_populations)))
+		cnt = 0
+		self.avg_fig = 0.0
+		self.max_fig = -100000
+		self.min_fig = 	100000
+		self.summ = 0.0
+		for iii in range(0,len(fits_populations)):
+			maxx = next(sort_population)
+			max_fig,max_chromosome = maxx
+			if(self.max_fig < max_fig):
+				self.max_fig = max_fig
+				self.max_chromosome = max_chromosome
+			if(self.min_fig > max_fig and max_fig != 0.0):
+				self.min_fig = max_fig
+				self.min_chromosome = max_chromosome
+			self.avg_fig += max_fig
+			if max_fig != 0.0:
+				self.summ += 1.0
+			if int(sys.argv[1]) == 3 and max_fig > 0.9:
+				cnt += 1
+			elif int(sys.argv[1]) == 2 and max_fig > 400:
+				cnt += 1
+			elif int(sys.argv[1]) == 1 and max_fig > 600:
+				cnt += 1
+			elif int(sys.argv[1]) == 0 and max_fig > 250:
+				cnt += 1
+			elif int(sys.argv[1]) == 4 and max_fig > 0.55 and max_fig < 1.00:
+				cnt += 1
+			elif int(sys.argv[1]) == 5 and max_fig > 10:
+				cnt += 1
+			elif int(sys.argv[1]) == 6 and max_fig > 0.15:
+				cnt += 1
+		if self.summ != 0:
+			ratio = 1.0*cnt/self.summ
+			self.avg_fig = self.avg_fig/self.summ
+		else:
+			ratio = 0.0
 			self.avg_fig = 0.0
-			self.max_fig = -100000
-			self.min_fig = 	100000
-			self.summ = 0.0
-			for iii in range(0,len(fits_populations)):
-				maxx = next(sort_population)
-				max_fig,max_chromosome = maxx
-				if(self.max_fig < max_fig):
-					self.max_fig = max_fig
-					self.max_chromosome = max_chromosome
-				if(self.min_fig > max_fig and max_fig != 0.0):
-					self.min_fig = max_fig
-					self.min_chromosome = max_chromosome
-				self.avg_fig += max_fig
-				if max_fig != 0.0:
-					self.summ += 1.0
-				if int(sys.argv[1]) == 3 and max_fig > 0.9:
-					cnt += 1
-				elif int(sys.argv[1]) == 2 and max_fig > 400:
-					cnt += 1
-				elif int(sys.argv[1]) == 1 and max_fig > 600:
-					cnt += 1
-				elif int(sys.argv[1]) == 0 and max_fig > 250:
-					cnt += 1
-				elif int(sys.argv[1]) == 4 and max_fig > 0.55 and max_fig < 1.00:
-					cnt += 1
-				elif int(sys.argv[1]) == 5 and max_fig > 10:
-					cnt += 1
-				elif int(sys.argv[1]) == 6 and max_fig > 0.15:
-					cnt += 1
-			if self.summ != 0:
-				ratio = 1.0*cnt/self.summ
-				self.avg_fig = self.avg_fig/self.summ
-			else:
-				ratio = 0.0
-				self.avg_fig = 0.0
-			if  ratio > 0.8:
-				print "Checked Stop"
-				print ratio
-				return 1
-			#				fits = [f for f, ch in fits_populations]
-			#				best = max(fits)
-			np.set_printoptions(precision=3)
-			np_max = np.array(self.max_chromosome)
-			print("Max %.3f Min %.3f Avg %.3f")%(self.max_fig,self.min_fig,self.avg_fig)
+		if  ratio > 0.8:
+			print "Checked Stop"
 			print ratio
-			print(self.max_chromosome)
-			print("%d---------------------------------------------------%d")%(EM,EM)
-			print(np_max)
-			if int(sys.argv[1]) == 3:
-				if(max_fig > 0.55):
-					fout.write(str(max_fig)+"\t[")
-					for ii in np_max:
-						fout.write(str(ii)+",")
-					fout.write("]\n")
-			elif int(sys.argv[1]) > 0:
-				if(max_fig > 600):
-					fout.write(str(max_fig)+"\t[")
-					for ii in np_max:
-						fout.write(str(ii)+",")
-					fout.write("]\n")
-				#				print(np_max)
-			fout.close()
-			#				for x in max_chromosome: print "%0.2f" % (x)
-			if self.counter > self.limit:
-				print(max_fig)
-				#					print(np_max)
-				return 1
+			return 1
+		#				fits = [f for f, ch in fits_populations]
+		#				best = max(fits)
+		np.set_printoptions(precision=3)
+		np_max = np.array(self.max_chromosome)
+		print("Max %.3f Min %.3f Avg %.3f")%(self.max_fig,self.min_fig,self.avg_fig)
+		print ratio
+		print(self.max_chromosome)
+		print("%d---------------------------------------------------%d")%(EM,EM)
+		print(np_max)
+		if int(sys.argv[1]) == 3:
+			if(max_fig > 0.55):
+				fout.write(str(max_fig)+"\t[")
+				for ii in np_max:
+					fout.write(str(ii)+",")
+				fout.write("]\n")
+		elif int(sys.argv[1]) > 0:
+			if(max_fig > 600):
+				fout.write(str(max_fig)+"\t[")
+				for ii in np_max:
+					fout.write(str(ii)+",")
+				fout.write("]\n")
+			#				print(np_max)
+		fout.close()
+		#				for x in max_chromosome: print "%0.2f" % (x)
+		if self.counter > self.limit:
+			print(max_fig)
+			#					print(np_max)
+			return 1
+		else:
+			return 0
+		"""
+		self.counter += 1
+
+		if self.counter % 10 == 0:
+			best_match = list(sorted(fits_populations))[-1][1]
+			fits = [f for f, ch in fits_populations]
+			best = max(fits)
+			worst = min(fits)
+			ave = sum(fits) / len(fits)
+			pass
+
+		return self.counter >= self.limit
+		"""
+	def parents(self, fits_populations):
+		while True:
+			father = self.tournament(fits_populations)
+			mother = self.tournament(fits_populations)
+			yield (father, mother)
+			pass
+	pass
+	def crossover(self, parents,EM):
+		father, mother = parents
+		child1 = []
+		child2 = []
+		"""
+		for ii in range(0,self.chromo_size):
+			if random.uniform(0.0,1.0) > 0.5:
+				child1.append(father[ii])
+				child2.append(mother[ii])
 			else:
-				return 0
-			"""
-			self.counter += 1
+				child1.append(mother[ii])
+				child2.append(father[ii])
+		"""
+		if EM == 0:
+			CROSS_START = 1
+			CROSS_END = 39
+		else:
+			CROSS_START = 40
+			CROSS_END = 59
+		index1 = random.randint(CROSS_START, CROSS_END)
+		index2 = random.randint(CROSS_START, CROSS_END)
+		if index1 > index2:
+			index1, index2 = index2, index1
+		child1 = father[:index1] + mother[index1:index2] + father[index2:]
+		child2 = mother[:index1] + father[index1:index2] + mother[index2:]
 
-			if self.counter % 10 == 0:
-				best_match = list(sorted(fits_populations))[-1][1]
-				fits = [f for f, ch in fits_populations]
-				best = max(fits)
-				worst = min(fits)
-				ave = sum(fits) / len(fits)
-				pass
+		return (child1, child2)
+	def mutation(self, chromosome,EM):
+		if EM == 0:
+			MUT_START = 1
+			MUT_END = 21
+			MUT_END = 39
+		else:
+			MUT_START = 40
+			MUT_END = 59
+		index = random.randint(MUT_START,MUT_END)
+		vary = random.uniform(0.0,1.0)
+		#				vary = random.randint(0,1)
+		mutated = list(chromosome)
+		mutated[index] = vary
+		return mutated
+	# internals
+	def tournament(self, fits_populations):
+		alicef, alice = self.select_random(fits_populations)
+		bobf, bob = self.select_random(fits_populations)
+		return alice if alicef > bobf else bob
+	def select_random(self, fits_populations):
+		return fits_populations[random.randint(0, len(fits_populations)-1)]
+	def random_chromo(self):
+		return [random.uniform(0.0,1.0) for i in range(self.chromo_size)]
+	#return [random.randint(0,1) for i in range(self.chromo_size)]
+	pass
 
-			return self.counter >= self.limit
-			"""
-		def parents(self, fits_populations):
-			while True:
-				father = self.tournament(fits_populations)
-				mother = self.tournament(fits_populations)
-				yield (father, mother)
-				pass
-		pass
-		def crossover(self, parents,EM):
-			father, mother = parents
-			child1 = []
-			child2 = []
-			"""
-			for ii in range(0,self.chromo_size):
-				if random.uniform(0.0,1.0) > 0.5:
-					child1.append(father[ii])
-					child2.append(mother[ii])
+(result_queue,population[jjjj+iterr*pid_num],random_lists[jjjj],argument,TrainDurat,bet_cond,EM)
+
+def bet_condition(c_h,c_h_m,c_a,c_a_m,odds_h,odds_a,bet_cond):
+	if bet_cond == 0:
+		cond1 = 1 if sum(c_h_m[0:3])/1.2 > sum(c_a_m[0:3]) else 0
+		cond2 = 1 if sum(c_h_m[3:6])/1.2 > sum(c_a_m[3:6]) else 0
+		cond3 = 1 if (sum(c_h[0:2])+c_h[4])/1.2 > sum(c_a[0:2])+c_a[4] else 0
+		cond4 = 1 if (sum(c_h[2:4])+c_h[4])/1.2 > sum(c_a[2:4])+c_a[4] else 0
+		if cond1+cond2+cond3+cond4 > 2:
+			return 1
+		elif cond1+cond2+cond3+cond4 <2:
+			return 0
+		else:
+			return -1
+	elif bet_cond == 1:
+		cond1 = 1 if sum(c_h_m[0:3])> sum(c_a_m[0:3]) else 0
+		cond2 = 1 if sum(c_h_m[3:6])> sum(c_a_m[3:6]) else 0
+		cond3 = 1 if (sum(c_h[0:2])+c_h[4])> sum(c_a[0:2])+c_a[4] else 0
+		cond4 = 1 if (sum(c_h[2:4])+c_h[4])> sum(c_a[2:4])+c_a[4] else 0
+		if cond1+cond2+cond3+cond4 > 2:
+			return 1
+		elif cond1+cond2+cond3+cond4 <2:
+			return 0
+		else:
+			return -1
+	elif bet_cond == 2:
+		if sum(c_h)>sum(c_a):
+			return 1
+		else :
+			return 0
+	elif bet_cond == 3:
+		if sum(c_h_m) > sum(c_a_m):
+			return 1
+		else:
+			return 0
+	elif bet_cond == 4:
+		if sum(c_h_m[0:3])+sum(c_h[0:2]) > sum(c_a_m[0:3])+sum(c_a[0:2]) and sum(c_h_m[3:6])+sum(c_h[2:4]) > sum(c_a_m[3:6])+sum(c_a[2:4]):
+			return 1
+		elif sum(c_h_m[0:3])+sum(c_h[0:2]) < sum(c_a_m[0:3])+sum(c_a[0:2]) and sum(c_h_m[3:6])+sum(c_h[2:4]) < sum(c_a_m[3:6])+sum(c_a[2:4]):
+			return 0
+		else:
+			return -1
+	elif bet_cond == 5:
+		if odds_h < odds_a:
+			return 1
+	elif bet_cond == 6:
+		return 0
+	elif bet_cond == 7:
+		if odds_h < odds_a:
+			return 2
+		else:
+			return 0
+	else:
+		return -1
+def Training(result_queue,db_file,args_list):
+	#db file open API insert
+	#CODE HERE\
+	#db file open API insert
+	#args_list = [train start, train dur, exec end, argument(),bet_cond,EM] 6
+
+	if len(args_list) == 6:
+		train_start,train_dur,exec_end,args,bet_cond,EM = args_list
+	conn = sql.connect(db_file)
+	cur = conn.cursor()
+	cur.execute("select * from MLB_SU where nid>:nid_s and nid<:nid_e)",{"nid_s":train_start,"nid_e":exec_end})
+	Odds_ratio = 0.0
+	Budjet = 200.0
+	MinBudjet = Budjet
+	MaxBudjet = 0
+	Winmoney = Budjet/40
+	Winmoney_incr = Winmoney/10
+	Jaemin = Bank("Jaemin",Budjet)
+	Jaemin.set_Winmoney(Winmoney)
+# TrainStart min is 1
+#rrrrrrrrrrrrr
+	TrainStart = train_start
+# TrainDurat is now new argument
+	TrainDurat = train_dur
+	ExecDurat  = exec_end
+
+	TrainCount = 0
+	count_w = 0
+	count_l = 0
+	count_h = 0
+	count_a = 0
+	current_budjet = 200.0
+	for fin_line in cur:
+#		fin_line = fin.readline()
+		if not fin_line:
+			break
+		TrainCount += 1
+		if (TrainCount < TrainStart):
+			continue
+		game_stats = fin_line[6:17]
+		home_stats = []
+		away_stats = []
+		for ii in range(0,6):
+			if ii % 2 == 0:
+				home_stats.append(fin_line[ii+17])
+			else:
+				away_stats.append(fin_line[ii+17])
+		for ii in range(0,22):
+			if ii < 11:
+				home_stats.append(fin_line[ii+23])
+			else:
+				away_stats.append(fin_line[ii+23])
+		if TrainCount > TrainStart+TrainDurat and TrainCount < TrainStart+TrainDurat+ExecDurat:
+			if bet_condition(c_h,c_a,c_h_m,c_a_m,odds_h,odds_a,bet_cond) == 1:
+				if odds_h < 1.6:
+					hand_minus_home = 0
+				elif odds_h > 2.5:
+					hand_plus_home = 0
+				count_h += 1
+				bet_game = 1
+			elif bet_condition(c_h,c_a,c_h_m,c_a_m,odds_h,odds_a,bet_cond) == 0:
+				if odds_a < 1.6:
+					hand_minus_away =0
+					bet_game = -1
+				elif odds_a > 2.5:
+					hand_plus_away = 0
+					bet_game = -1
+				count_a += 1
+				bet_game = 0
+			else:
+				bet_game = -1
+			#bet_game determination mppp
+			if bet_game == 1:
+				if sum(c_h) < 0:
+					pay_out = Jaemin.get_Winmoney()
 				else:
-					child1.append(mother[ii])
-					child2.append(father[ii])
-			"""
-			if EM == 0:
-				CROSS_START = 1
-				CROSS_END = 39
-			else:
-				CROSS_START = 40
-				CROSS_END = 59
-			index1 = random.randint(CROSS_START, CROSS_END)
-			index2 = random.randint(CROSS_START, CROSS_END)
-			if index1 > index2:
-				index1, index2 = index2, index1
-			child1 = father[:index1] + mother[index1:index2] + father[index2:]
-			child2 = mother[:index1] + father[index1:index2] + mother[index2:]
+					pay_out = Jaemin.get_Winmoney()*sum(c_h)
+			elif bet_game == 0:
+				if sum(c_a) < 0:
+					pay_out = Jaemin.get_Winmoney()
+				else:
+					pay_out = Jaemin.get_Winmoney()*sum(c_a)
+			else :
+				pay_out = 0
+			correct = 0;
+			correct_money = 0
+#	print("%d%d%d%d\n"%(hand_minus_home,hand_plus_home,hand_minus_away,hand_plus_away))
+			if scorediff>0 and bet_game==1:
+				correct = 1
+				correct_money = odds_h*pay_out
+				count_w += 1
+			elif scorediff<0 and bet_game==0:
+				correct = 1
+				correct_money = odds_a*pay_out
+				count_w += 1
+			elif bet_game == -1:
+				correct = 0
+				correct_money = 0
+			else :
+				count_l += 1
+			Jaemin.buyin(correct_money)
+			Jaemin.payout(pay_out)
+		"""
+		if scorediff > 5 and odds_h > odds_a:
+			continue
+		elif scorediff < 5 and odds_a > odds_h:
+			continue
+		elif scorediff > 0 and odds_h > 2.5:
+			continue
+		elif scorediff < 0 and odds_a > 2.5:
+			continue
+		"""
+#  update result only score result
+		MLB_Team_Exist = 2
+		for ii in MLB_Team_List:
+			if MLB_Team_Exist == 0:
+				break
+			if ii.get_Name() == hometeam:
+				if bet_cond == 3:
+					ii.update_score(hometeam,awayteam,scorediff,1.0,1)
+				else:
+					ii.update_score(hometeam,awayteam,scorediff,odds_h,1)
+				ii.set_Series(awayteam)
+			elif ii.get_Name() == awayteam:
+				if bet_cond == 3:
+					ii.update_score(hometeam,awayteam,scorediff,1.0,1)
+				else:
+					ii.update_score(hometeam,awayteam,scorediff,odds_a,1)
+				ii.set_Series(hometeam)
+		MinBudjet = min(MinBudjet,Jaemin.get_Budjet())
+		MaxBudjet = max(MaxBudjet,Jaemin.get_Budjet())
+	if count_w+count_l == 0:
+		Odds_ratio = 0
+	else:
+		Odds_ratio += count_w/(count_w+count_l*1.0)
+	argument_list_tmp = np.array([MinBudjet,MaxBudjet,Jaemin.get_Budjet(),Odds_ratio])
+	result_queue.put(argument_list_tmp[argument])
 
-			return (child1, child2)
-		def mutation(self, chromosome,EM):
-			if EM == 0:
-				MUT_START = 1
-				MUT_END = 21
-				MUT_END = 39
-			else:
-				MUT_START = 40
-				MUT_END = 59
-			index = random.randint(MUT_START,MUT_END)
-			vary = random.uniform(0.0,1.0)
-			#				vary = random.randint(0,1)
-			mutated = list(chromosome)
-			mutated[index] = vary
-			return mutated
-		# internals
-		def tournament(self, fits_populations):
-			alicef, alice = self.select_random(fits_populations)
-			bobf, bob = self.select_random(fits_populations)
-			return alice if alicef > bobf else bob
-		def select_random(self, fits_populations):
-			return fits_populations[random.randint(0, len(fits_populations)-1)]
-		def random_chromo(self):
-			return [random.uniform(0.0,1.0) for i in range(self.chromo_size)]
-		#return [random.randint(0,1) for i in range(self.chromo_size)]
-		pass
-	GeneticAlgorithm(MLB_Analysis("Hello")).run()
-	pass
 
-	def
-	def __init__(self):
-	pass
-
-
+MLB = Gene_File_Parser("mlb2015.txt")
+print Gene_process_Shared(c2014_range[int(sys.argv[4])],MLB,int(sys.argv[1]))
+GeneticAlgorithm(MLB_Analysis("Hello")).run()
+pass
