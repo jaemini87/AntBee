@@ -11,6 +11,7 @@ import threading
 import time
 import ctypes
 import sys
+import math
 class GeneticAlgorithm(object):
 	def __init__(self, genetics):
 		self.genetics = genetics
@@ -133,7 +134,7 @@ class MLB_Analysis(GeneticFunctions):
 			result_queue = Queue()
 			pid_t = []
 			for jjjj in range(0,len(random_lists)):
-				pid_t.append(Process(target = Training, args =(result_queue,population[jjjj+iterr*pid_num],random_lists[jjjj],argument,TrainDurat,bet_cond,EM)))
+				pid_t.append(Process(target = Training, args =(result_queue,chromo,population[jjjj+iterr*pid_num],random_lists[jjjj],argument,TrainDurat,bet_cond,EM)))
 			#			pid_t = [Process(target = Gene_Multiprocess_Shared, args =(result_queue,chromo,File_List,argument,TrainDurat,bet_cond,EM)) for File_List in random_lists]
 			for pid_t_start in pid_t:
 				pid_t_start.start()
@@ -303,7 +304,6 @@ class MLB_Analysis(GeneticFunctions):
 	#return [random.randint(0,1) for i in range(self.chromo_size)]
 	pass
 
-(result_queue,population[jjjj+iterr*pid_num],random_lists[jjjj],argument,TrainDurat,bet_cond,EM)
 
 def bet_condition(c_h,c_h_m,c_a,c_a_m,odds_h,odds_a,bet_cond):
 	if bet_cond == 0:
@@ -365,9 +365,39 @@ def Training(result_queue,db_file,args_list):
 
 	if len(args_list) == 6:
 		train_start,train_dur,exec_end,args,bet_cond,EM = args_list
+	home_stats_avg = [0.0 for ii in range(0,14)]
+	home_stats_std = [0.0 for ii in range(0,14)]
+	away_stats_avg = [0.0 for ii in range(0,14)]
+	away_stats_std = [0.0 for ii in range(0,14)]
 	conn = sql.connect(db_file)
 	cur = conn.cursor()
 	cur.execute("select * from MLB_SU where nid>:nid_s and nid<:nid_e)",{"nid_s":train_start,"nid_e":exec_end})
+	home_stats = []
+	away_stats = []
+	counter = 0.0
+	for fin_line in cur:
+		for ii in range(0,6):
+			if ii % 2 == 0:
+				home_stats.append(fin_line[ii+17])
+			else:
+				away_stats.append(fin_line[ii+17])
+		for ii in range(0,22):
+			if ii < 11:
+				home_stats.append(fin_line[ii+23])
+			else:
+				away_stats.append(fin_line[ii+23])
+		home_stats_avg += np.array(home_stats)
+		away_stats_avg += np.array(away_stats)
+		home_stats_std += np.array(home_stats)*np.array(home_stats)
+		away_stats_std += np.array(away_stats)*np.array(away_stats)
+		counter += 1.0
+	home_stats_avg /= np.array(home_stats_avg)/counter
+	away_stats_avg /= np.array(away_stats_avg)/counter
+	home_stats_std /= np.array(home_stats_std)/counter
+	away_stats_std /= np.array(away_stats_std)/counter
+	home_stats_std = pow(np.array(home_stats_std)-np.array(home_stats_avg),0.5)
+	away_stats_std = pow(np.array(away_stats_std)-np.array(away_stats_avg),0.5)
+
 	Odds_ratio = 0.0
 	Budjet = 200.0
 	MinBudjet = Budjet
@@ -390,7 +420,6 @@ def Training(result_queue,db_file,args_list):
 	count_a = 0
 	current_budjet = 200.0
 	for fin_line in cur:
-#		fin_line = fin.readline()
 		if not fin_line:
 			break
 		TrainCount += 1
@@ -409,83 +438,39 @@ def Training(result_queue,db_file,args_list):
 				home_stats.append(fin_line[ii+23])
 			else:
 				away_stats.append(fin_line[ii+23])
+		home_stats = (np.array(home_stats)-np.array(home_stats_avg))/np.array(home_stats_std)
+		away_stats = (np.array(away_stats)-np.array(away_stats_avg)/np.array(away_stats_std))
+		home_chr_stats = np.array(home_stats)*np.array(chromo[0:14])
+		away_chr_stats = np.array(away_stats)*np.array(chromo[14:28])
+
 		if TrainCount > TrainStart+TrainDurat and TrainCount < TrainStart+TrainDurat+ExecDurat:
-			if bet_condition(c_h,c_a,c_h_m,c_a_m,odds_h,odds_a,bet_cond) == 1:
-				if odds_h < 1.6:
-					hand_minus_home = 0
-				elif odds_h > 2.5:
-					hand_plus_home = 0
+			if predict_game(home_chr_stats,away_chr_stats,mode) == 1:
 				count_h += 1
 				bet_game = 1
-			elif bet_condition(c_h,c_a,c_h_m,c_a_m,odds_h,odds_a,bet_cond) == 0:
-				if odds_a < 1.6:
-					hand_minus_away =0
-					bet_game = -1
-				elif odds_a > 2.5:
-					hand_plus_away = 0
-					bet_game = -1
+			elif predict_game(home_chr_stats,away_chr_stats,mode) == -1:
 				count_a += 1
-				bet_game = 0
-			else:
 				bet_game = -1
+			else:
+				bet_game = 0
 			#bet_game determination mppp
 			if bet_game == 1:
-				if sum(c_h) < 0:
+				pay_out = Jaemin.get_Winmoney()
+			elif bet_game == -1:
 					pay_out = Jaemin.get_Winmoney()
-				else:
-					pay_out = Jaemin.get_Winmoney()*sum(c_h)
-			elif bet_game == 0:
-				if sum(c_a) < 0:
-					pay_out = Jaemin.get_Winmoney()
-				else:
-					pay_out = Jaemin.get_Winmoney()*sum(c_a)
 			else :
 				pay_out = 0
-			correct = 0;
 			correct_money = 0
 #	print("%d%d%d%d\n"%(hand_minus_home,hand_plus_home,hand_minus_away,hand_plus_away))
-			if scorediff>0 and bet_game==1:
-				correct = 1
-				correct_money = odds_h*pay_out
+			if result_game(mode) == bet_game:
+				correct_money = odds_game(mode)*pay_out
 				count_w += 1
-			elif scorediff<0 and bet_game==0:
-				correct = 1
-				correct_money = odds_a*pay_out
-				count_w += 1
-			elif bet_game == -1:
-				correct = 0
+			elif bet_game == 0:
 				correct_money = 0
 			else :
 				count_l += 1
+				correct_money = 0
 			Jaemin.buyin(correct_money)
 			Jaemin.payout(pay_out)
-		"""
-		if scorediff > 5 and odds_h > odds_a:
-			continue
-		elif scorediff < 5 and odds_a > odds_h:
-			continue
-		elif scorediff > 0 and odds_h > 2.5:
-			continue
-		elif scorediff < 0 and odds_a > 2.5:
-			continue
-		"""
-#  update result only score result
-		MLB_Team_Exist = 2
-		for ii in MLB_Team_List:
-			if MLB_Team_Exist == 0:
-				break
-			if ii.get_Name() == hometeam:
-				if bet_cond == 3:
-					ii.update_score(hometeam,awayteam,scorediff,1.0,1)
-				else:
-					ii.update_score(hometeam,awayteam,scorediff,odds_h,1)
-				ii.set_Series(awayteam)
-			elif ii.get_Name() == awayteam:
-				if bet_cond == 3:
-					ii.update_score(hometeam,awayteam,scorediff,1.0,1)
-				else:
-					ii.update_score(hometeam,awayteam,scorediff,odds_a,1)
-				ii.set_Series(hometeam)
 		MinBudjet = min(MinBudjet,Jaemin.get_Budjet())
 		MaxBudjet = max(MaxBudjet,Jaemin.get_Budjet())
 	if count_w+count_l == 0:
