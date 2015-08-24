@@ -12,11 +12,37 @@ import time
 import ctypes
 import sys
 import math
+class Bank():
+	Name = "Jaemin"
+	Budjet = 1000.0
+	Winmoney = 10.0
+	def __init__(self,name,money):
+		self.Name = name
+		self.Budjet = money
+	def set_Winmoney(self,money):
+		self.Winmoney = money
+	def get_Winmoney(self):
+		return self.Winmoney
+	def get_Budjet(self):
+		return self.Budjet
+	def print_name(self):
+		print(self.Name)
+	def print_Budjet(self):
+		print(self.Budjet)
+	def payout(self,bet_money):
+		self.Budjet -= bet_money
+	def buyin(self,money_in):
+		self.Budjet += money_in
 class GeneticAlgorithm(object):
 	def __init__(self, genetics):
 		self.genetics = genetics
 		pass
-	def run(self,args_list):
+	def run(self):
+		argument = 3
+		mode = "money"
+		predict_mode = "add"
+		EM_enable = 0
+		args_list = argument,mode,predict_mode,EM_enable
 		population = self.genetics.initial()
 		EM  = 0
 		argument,mode,predict_mode,EM_enable = args_list
@@ -28,7 +54,7 @@ class GeneticAlgorithm(object):
 			fits_pops = []
 			for ii in range(0,len(population)):
 				fits_pops.append((fits_list[ii],population[ii]))
-			if self.genetics.check_stop(fits_pops,EM):
+			if self.genetics.check_stop(fits_pops,args_list):
 				break
 			population = self.next(fits_pops,EM)
 			if EM_enable == 1:
@@ -89,7 +115,7 @@ class GeneticFunctions(object):
 		return chromosome
 	pass
 class MLB_Analysis(GeneticFunctions):
-	def __init__(self,db_file,limit=2000,size=100,prob_crossover=0.9, prob_mutation=0.1,chromo_size = 28):
+	def __init__(self,db_file="all_usamlb-2014.db",limit=2000,size=100,prob_crossover=0.9, prob_mutation=0.1,chromo_size = 28):
 		self.db_file = db_file
 		self.counter = 0
 		self.limit = limit
@@ -127,12 +153,12 @@ class MLB_Analysis(GeneticFunctions):
 		pop_len = len(population)/pid_num
 		results_list = []
 		for iterr in range(0,pop_len):
-			random_args = [(random.randint(0,0),random.randint(0,TrainStart)) for ii in range(0,pid_num)]
+			random_args = [(random.randint(0,0),random.randint(0,TrainStart-ExecDurat-TrainDurat)) for ii in range(0,pid_num)]
 			random_lists = []
 			for ii in random_args:
 				ii_1,ii_2 = ii
 #					tmp_list = self.MLB_File_List[ii_1]
-				random_lists.append([ii_2,TrainDurat,ExecDurat,argument,mode,predict_mode,EM])
+				random_lists.append([self.db_file,ii_2,TrainDurat,ii_2+TrainDurat,argument,mode,predict_mode,EM])
 			result_queue = Queue()
 			pid_t = []
 			for jjjj in range(0,len(random_lists)):
@@ -151,7 +177,7 @@ class MLB_Analysis(GeneticFunctions):
 	def check_stop(self, fits_populations,args_list):
 		argument,mode,predict_mode,EM = args_list
 
-		fout = open(str(sys.argv[4]),'a')
+		fout = open("mlb_analysis.txt",'a')
 		self.counter += 1
 		sort_population = iter(reversed(sorted(fits_populations)))
 		sort_population2 = iter((sorted(fits_populations)))
@@ -276,11 +302,10 @@ class MLB_Analysis(GeneticFunctions):
 	def mutation(self, chromosome,EM):
 		if EM == 0:
 			MUT_START = 1
-			MUT_END = 21
-			MUT_END = 39
+			MUT_END = self.chromo_size-1
 		else:
-			MUT_START = 40
-			MUT_END = 59
+			MUT_START = 1
+			MUT_END = self.chromo_size-1
 		index = random.randint(MUT_START,MUT_END)
 		vary = random.uniform(0.0,1.0)
 		#				vary = random.randint(0,1)
@@ -305,20 +330,20 @@ class MLB_Analysis(GeneticFunctions):
 		#CODE HERE\
 		#db file open API insert
 		#args_list = [train start, train dur, exec end, argument(),bet_cond,EM] 6
-
-		if len(args_list) == 6:
-			db_file,train_start,train_dur,exec_end,args,mode,predict_mode,EM = args_list
+		#if len(args_list) == 8:
+		db_file,train_start,train_dur,exec_end,args,mode,predict_mode,EM = args_list
 		home_stats_avg = [0.0 for ii in range(0,14)]
 		home_stats_std = [0.0 for ii in range(0,14)]
 		away_stats_avg = [0.0 for ii in range(0,14)]
 		away_stats_std = [0.0 for ii in range(0,14)]
+		#conn = sql.connect(db_file)
 		conn = sql.connect(db_file)
 		cur = conn.cursor()
-		cur.execute("select * from MLB_SU where nid>:nid_s and nid<:nid_e)",{"nid_s":train_start,"nid_e":exec_end})
-		home_stats = []
-		away_stats = []
+		cur.execute("select * from MLB_SU where nid>:nid_s and nid<:nid_e ORDER BY nid DESC ",{"nid_s":train_start,"nid_e":exec_end})
 		counter = 0.0
 		for fin_line in cur:
+			home_stats = []
+			away_stats = []
 			for ii in range(0,6):
 				if ii % 2 == 0:
 					home_stats.append(fin_line[ii+17])
@@ -334,13 +359,15 @@ class MLB_Analysis(GeneticFunctions):
 			home_stats_std += np.array(home_stats)*np.array(home_stats)
 			away_stats_std += np.array(away_stats)*np.array(away_stats)
 			counter += 1.0
-		home_stats_avg /= np.array(home_stats_avg)/counter
-		away_stats_avg /= np.array(away_stats_avg)/counter
-		home_stats_std /= np.array(home_stats_std)/counter
-		away_stats_std /= np.array(away_stats_std)/counter
-		home_stats_std = pow(np.array(home_stats_std)-np.array(home_stats_avg),0.5)
-		away_stats_std = pow(np.array(away_stats_std)-np.array(away_stats_avg),0.5)
 
+		home_stats_avg = map(lambda x: x/counter,home_stats_avg)
+		away_stats_avg = map(lambda x: x/counter,away_stats_avg)
+		home_stats_std = map(lambda x: x/counter,home_stats_std)
+		away_stats_std = map(lambda x: x/counter,away_stats_std)
+		home_stats_std = np.array(home_stats_std)-np.array(home_stats_avg)
+		away_stats_std = np.array(away_stats_std)-np.array(away_stats_avg)
+		home_stats_std = map(lambda  x: pow(x,0.5),home_stats_std)
+		away_stats_std = map(lambda  x: pow(x,0.5),away_stats_std)
 		Odds_ratio = 0.0
 		Budjet = 200.0
 		MinBudjet = Budjet
@@ -362,12 +389,11 @@ class MLB_Analysis(GeneticFunctions):
 		count_h = 0
 		count_a = 0
 		current_budjet = 200.0
+		cur = conn.cursor()
+		cur.execute("select * from MLB_SU where nid>:nid_s and nid<:nid_e ORDER BY nid DESC ",{"nid_s":train_start,"nid_e":exec_end})
 		for fin_line in cur:
 			if not fin_line:
 				break
-			TrainCount += 1
-			if (TrainCount < TrainStart):
-				continue
 			game_stats = fin_line[6:17]
 			home_stats = []
 			away_stats = []
@@ -382,39 +408,34 @@ class MLB_Analysis(GeneticFunctions):
 				else:
 					away_stats.append(fin_line[ii+23])
 			home_stats = (np.array(home_stats)-np.array(home_stats_avg))/np.array(home_stats_std)
-			away_stats = (np.array(away_stats)-np.array(away_stats_avg)/np.array(away_stats_std))
+			away_stats = (np.array(away_stats)-np.array(away_stats_avg))/np.array(away_stats_std)
 			home_chr_stats = np.array(home_stats)*np.array(chromo[0:14])
 			away_chr_stats = np.array(away_stats)*np.array(chromo[14:28])
-
-			if TrainCount > TrainStart+TrainDurat and TrainCount < TrainStart+TrainDurat+ExecDurat:
-				home_away =  self.predict_game(home_chr_stats,away_chr_stats,predict_mode)
-				if home_away == 1:
-					count_h += 1
-					bet_game = 1
-				elif home_away == -1:
-					count_a += 1
-					bet_game = -1
-				else:
-					bet_game = 0
-				#bet_game determination mppp
-				if bet_game == 1:
+			home_away =  self.predict_game(home_chr_stats,away_chr_stats,predict_mode)
+			if home_away == 1:
+				count_h += 1
+			elif home_away == -1:
+				count_a += 1
+			#bet_game determination mppp
+			if home_away == 1:
+				pay_out = Jaemin.get_Winmoney()
+			elif home_away == -1:
 					pay_out = Jaemin.get_Winmoney()
-				elif bet_game == -1:
-						pay_out = Jaemin.get_Winmoney()
-				else :
-					pay_out = 0
+			else :
+				pay_out = 0
+			correct_money = 0
+			result =  self.result_game(game_stats,mode,home_away)
+			if result == 1:
+				correct_money = self.odds_game(game_stats,mode,home_away)*pay_out
+				count_w += 1
+			elif result == 0:
 				correct_money = 0
-	#	print("%d%d%d%d\n"%(hand_minus_home,hand_plus_home,hand_minus_away,hand_plus_away))
-				if self.result_game(game_stats,mode,home_away) == bet_game:
-					correct_money = self.odds_game(game_stats,mode,home_away)*pay_out
-					count_w += 1
-				elif bet_game == 0:
-					correct_money = 0
-				else :
-					count_l += 1
-					correct_money = 0
-				Jaemin.buyin(correct_money)
-				Jaemin.payout(pay_out)
+			else :
+				count_l += 1
+				correct_money = 0
+
+			Jaemin.buyin(correct_money)
+			Jaemin.payout(pay_out)
 			MinBudjet = min(MinBudjet,Jaemin.get_Budjet())
 			MaxBudjet = max(MaxBudjet,Jaemin.get_Budjet())
 		if count_w+count_l == 0:
@@ -422,54 +443,58 @@ class MLB_Analysis(GeneticFunctions):
 		else:
 			Odds_ratio += count_w/(count_w+count_l*1.0)
 		argument_list_tmp = np.array([MinBudjet,MaxBudjet,Jaemin.get_Budjet(),Odds_ratio])
+		conn.close()
 		result_queue.put(argument_list_tmp[args])
+		pass
 
 	def result_game(self,game_stats,mode,home_away):
 		if mode == "money":
-			if home_away == 1 and game_stats[8] != 0:
+			if home_away == 1 and game_stats[2] == 1:
 				return 1
-			elif home_away == -1 and game_stats[9] != 0:
-				return -1
+			elif home_away == -1 and game_stats[3] == 1:
+				return 1
 			else :
-				return 0
+				if game_stats[2] == -1 or game_stats[3] == -1:
+					return -1
+				else:
+					return 0
 		elif mode == "run":
-			if home_away == 1 and game_stats[10] != 0:
+			if home_away == 1 and game_stats[4] != 0:
 				return 1
-			elif home_away == -1 and game_stats[11] != 0:
+			elif home_away == -1 and game_stats[5] != 0:
 				return -1
 			else :
 				return 0
 		elif mode == "ou":
-			if home_away == 1 and game_stats[12] == 1:
+			if home_away == 1 and game_stats[6] == 1:
 				return 1
-			elif home_away == -1 and game_stats[12] == -1:
+			elif home_away == -1 and game_stats[6] == -1:
 				return -1
 			else :
 				return 0
 		else:
 			return 0
 		pass
-		season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u,\
 	def odds_game(self,game_stats,mode,home_away):
 		if mode == "money":
 			if home_away == 1:
-				return game_stats[13]
+				return game_stats[7]
 			elif home_away == -1 :
-				return game_stats[14]
+				return game_stats[8]
 			else :
 				return 0
 		elif mode == "run":
 			if home_away == 1:
-				return game_stats[13]*1.4
+				return game_stats[7]*1.4
 			elif home_away == -1 :
-				return game_stats[14]*1.4
+				return game_stats[8]*1.4
 			else :
 				return 0
 		elif mode == "ou":
 			if home_away == 1 :
-				return game_stats[15]
+				return game_stats[9]
 			elif home_away == -1 :
-				return game_stats[16]
+				return game_stats[10]
 			else :
 				return 0
 		else:
@@ -477,7 +502,9 @@ class MLB_Analysis(GeneticFunctions):
 		pass
 	def predict_game(self,home_chr_stats,away_chr_stats,predict_mode):
 		if predict_mode == "add":
-			if sum(home_chr_stats)>sum(away_chr_stats):
+			home = sum(home_chr_stats)
+			away = sum(away_chr_stats)
+			if home < away:
 				return 1
 			else:
 				return -1
@@ -485,9 +512,6 @@ class MLB_Analysis(GeneticFunctions):
 			return 0
 		pass
 
-argument = sys.argv[1]
-mode = "money"
-predict_mode = "add"
-EM_enable = 0
-args_list = argument,mode,predict_mode,EM_enable
-GeneticAlgorithm(MLB_Analysis("Hello")).run()
+#argument = sys.argv[1]
+if __name__ == '__main__':
+	GeneticAlgorithm(MLB_Analysis()).run()
