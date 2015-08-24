@@ -128,6 +128,8 @@ class MLB_Analysis(GeneticFunctions):
 		self.max_fig = -10000000.0
 		self.min_fig = 	10000000.0
 		self.avg_fig = 0.0
+		self.chromo_s = -1.0
+		self.chromo_e = 1.0
 		"""
 		self.MLB2012 = Gene_File_Parser_OU("mlb2012.txt.mid.rev")
 		self.MLB2013 = Gene_File_Parser_OU("mlb2013.txt.mid.rev")
@@ -287,7 +289,7 @@ class MLB_Analysis(GeneticFunctions):
 		"""
 		if EM == 0:
 			CROSS_START = 1
-			CROSS_END = 39
+			CROSS_END = self.chromo_size
 		else:
 			CROSS_START = 40
 			CROSS_END = 59
@@ -307,7 +309,7 @@ class MLB_Analysis(GeneticFunctions):
 			MUT_START = 1
 			MUT_END = self.chromo_size-1
 		index = random.randint(MUT_START,MUT_END)
-		vary = random.uniform(0.0,1.0)
+		vary = random.uniform(self.chromo_s,self.chromo_e)
 		#				vary = random.randint(0,1)
 		mutated = list(chromosome)
 		mutated[index] = vary
@@ -320,7 +322,7 @@ class MLB_Analysis(GeneticFunctions):
 	def select_random(self, fits_populations):
 		return fits_populations[random.randint(0, len(fits_populations)-1)]
 	def random_chromo(self):
-		return [random.uniform(0.0,1.0) for i in range(self.chromo_size)]
+		return [random.uniform(self.chromo_s,self.chromo_e) for i in range(self.chromo_size)]
 	#return [random.randint(0,1) for i in range(self.chromo_size)]
 	pass
 
