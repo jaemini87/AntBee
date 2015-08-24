@@ -254,19 +254,6 @@ class MLB_Analysis(GeneticFunctions):
 			return 1
 		else:
 			return 0
-		"""
-		self.counter += 1
-
-		if self.counter % 10 == 0:
-			best_match = list(sorted(fits_populations))[-1][1]
-			fits = [f for f, ch in fits_populations]
-			best = max(fits)
-			worst = min(fits)
-			ave = sum(fits) / len(fits)
-			pass
-
-		return self.counter >= self.limit
-		"""
 	def parents(self, fits_populations):
 		while True:
 			father = self.tournament(fits_populations)
@@ -451,15 +438,18 @@ class MLB_Analysis(GeneticFunctions):
 
 	def result_game(self,game_stats,mode,home_away):
 		if mode == "money":
-			if home_away == 1 and game_stats[2] == 1:
-				return 1
-			elif home_away == -1 and game_stats[3] == 1:
-				return 1
-			else :
-				if game_stats[2] == -1 or game_stats[3] == -1:
-					return -1
+			if home_away == 1 :
+				if (game_stats[2] == 1 or game_stats[3] == -1):
+					return 1
 				else:
-					return 0
+					return -1
+			elif home_away == -1:
+				if (game_stats[3] == 1 or game_stats[2] == -1):
+					return 1
+				else:
+					return -1
+			else :
+				return 0
 		elif mode == "run":
 			if home_away == 1 and game_stats[4] != 0:
 				return 1
