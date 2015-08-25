@@ -38,7 +38,7 @@ class GeneticAlgorithm(object):
 		self.genetics = genetics
 		pass
 	def run(self):
-		argument = 3
+		argument = 2
 		mode = "money"
 		predict_mode = "add"
 		EM_enable = 0
@@ -47,8 +47,6 @@ class GeneticAlgorithm(object):
 		EM  = 0
 		argument,mode,predict_mode,EM_enable = args_list
 		while True:
-			#			fits_pops = [ (fit_value,[Chromsome]), ...)
-			#fits_pops = [(self.genetics.fitness(ch,EM),ch) for ch in population]
 			args_list = argument,mode,predict_mode,EM
 			fits_list = self.genetics.fitness(population,args_list)
 			fits_pops = []
@@ -128,8 +126,10 @@ class MLB_Analysis(GeneticFunctions):
 		self.max_fig = -10000000.0
 		self.min_fig = 	10000000.0
 		self.avg_fig = 0.0
-		self.chromo_s = -1.0
-		self.chromo_e = 1.0
+		self.mid_fig = 0.0
+		self.chromo_s = 0.0
+		self.chromo_e = 2.0
+		self.float_int = 1
 		"""
 		self.MLB2012 = Gene_File_Parser_OU("mlb2012.txt.mid.rev")
 		self.MLB2013 = Gene_File_Parser_OU("mlb2013.txt.mid.rev")
@@ -148,10 +148,10 @@ class MLB_Analysis(GeneticFunctions):
 		# MLB team analysis goes here we calculate every game and outputs bank total budjet
 		# greater is better
 		argument,mode,predict_mode,EM = args_list
-		TrainDurat = 150
-		ExecDurat = 150
+		TrainDurat = 30
+		ExecDurat = 30
 		TrainStart = 1500
-		pid_num = 10
+		pid_num = 1
 		pop_len = len(population)/pid_num
 		results_list = []
 		for iterr in range(0,pop_len):
@@ -185,6 +185,7 @@ class MLB_Analysis(GeneticFunctions):
 		sort_population2 = iter((sorted(fits_populations)))
 		cnt = 0
 		self.avg_fig = 0.0
+		self.mid_fig = 0.0
 		self.max_fig = -100000
 		self.min_fig = 	100000
 		self.summ = 0.0
@@ -198,6 +199,8 @@ class MLB_Analysis(GeneticFunctions):
 				self.min_fig = max_fig
 				self.min_chromosome = max_chromosome
 			self.avg_fig += max_fig
+			if iii == int(len(fits_populations)/2):
+				self.mid_fig = max_fig
 			if max_fig != 0.0:
 				self.summ += 1.0
 			if int(argument) == 3 and max_fig > 0.9:
@@ -228,11 +231,12 @@ class MLB_Analysis(GeneticFunctions):
 		#				best = max(fits)
 		np.set_printoptions(precision=3)
 		np_max = np.array(self.max_chromosome)
-		print("Max %.3f Min %.3f Avg %.3f")%(self.max_fig,self.min_fig,self.avg_fig)
+		print("Max %.3f Min %.3f Avg %.3f Mid %.3f")%(self.max_fig,self.min_fig,self.avg_fig,self.mid_fig)
 		print ratio
-		print(self.max_chromosome)
+		print np_max[0:self.chromo_size/2]
+		print np_max[self.chromo_size/2:]
 		print("%d---------------------------------------------------%d")%(EM,EM)
-		print(np_max)
+#		print(np.array(np_max))
 		if int(argument) == 3:
 			if(max_fig > 0.55):
 				fout.write(str(max_fig)+"\t[")
@@ -296,8 +300,10 @@ class MLB_Analysis(GeneticFunctions):
 			MUT_START = 1
 			MUT_END = self.chromo_size-1
 		index = random.randint(MUT_START,MUT_END)
-		vary = random.uniform(self.chromo_s,self.chromo_e)
-		#				vary = random.randint(0,1)
+		if self.float_int == 1:
+			vary = random.uniform(self.chromo_s,self.chromo_e)
+		else:
+			vary= random.randint(self.chromo_s,self.chromo_e)
 		mutated = list(chromosome)
 		mutated[index] = vary
 		return mutated
@@ -309,8 +315,10 @@ class MLB_Analysis(GeneticFunctions):
 	def select_random(self, fits_populations):
 		return fits_populations[random.randint(0, len(fits_populations)-1)]
 	def random_chromo(self):
-		return [random.uniform(self.chromo_s,self.chromo_e) for i in range(self.chromo_size)]
-	#return [random.randint(0,1) for i in range(self.chromo_size)]
+		if self.float_int == 1:
+			return [random.uniform(self.chromo_s,self.chromo_e) for i in range(self.chromo_size)]
+		else:
+			return [random.randint(self.chromo_s,self.chromo_e) for i in range(self.chromo_size)]
 	pass
 
 
@@ -361,7 +369,7 @@ class MLB_Analysis(GeneticFunctions):
 		Budjet = 200.0
 		MinBudjet = Budjet
 		MaxBudjet = 0
-		Winmoney = Budjet/40
+		Winmoney = 100
 		Winmoney_incr = Winmoney/10
 		Jaemin = Bank("Jaemin",Budjet)
 		Jaemin.set_Winmoney(Winmoney)
@@ -378,8 +386,10 @@ class MLB_Analysis(GeneticFunctions):
 		count_h = 0
 		count_a = 0
 		current_budjet = 200.0
+		fit_list = []
 		cur = conn.cursor()
 		cur.execute("select * from MLB_SU where nid>:nid_s and nid<:nid_e ORDER BY nid DESC ",{"nid_s":train_start,"nid_e":exec_end})
+		
 		for fin_line in cur:
 			if not fin_line:
 				break
@@ -389,18 +399,54 @@ class MLB_Analysis(GeneticFunctions):
 			for ii in range(0,6):
 				if ii % 2 == 0:
 					home_stats.append(fin_line[ii+17])
+#					home_stats.append(0.0)
 				else:
 					away_stats.append(fin_line[ii+17])
+#					away_stats.append(0.0)
 			for ii in range(0,22):
 				if ii < 11:
 					home_stats.append(fin_line[ii+23])
+#					home_stats.append(0.0)
 				else:
 					away_stats.append(fin_line[ii+23])
+#					away_stats.append(0.0)
+			summ,home_away = self.greedy_game(game_stats,home_stats,away_stats,predict_mode)
 			home_stats = (np.array(home_stats)-np.array(home_stats_avg))/np.array(home_stats_std)
 			away_stats = (np.array(away_stats)-np.array(away_stats_avg))/np.array(away_stats_std)
 			home_chr_stats = np.array(home_stats)*np.array(chromo[0:14])
 			away_chr_stats = np.array(away_stats)*np.array(chromo[14:28])
-			home_away =  self.predict_game(home_chr_stats,away_chr_stats,predict_mode)
+#			summ,home_away = self.predict_game(home_chr_stats,away_chr_stats,predict_mode)
+#			summ,home_away = self.predict_game(home_chr_stats,away_chr_stats,"consensus")
+			fit_list.append([summ,home_away,game_stats])
+			fit_sorted = iter(reversed(sorted(fit_list)))
+#			fit_sorted = iter(sorted(fit_list))
+		iter_ii = int((exec_end-train_start)/2-0.1)
+		"""
+		for ii in range(0,iter_ii):
+			print next(fit_sorted)
+		print"--------------------"
+		"""
+#		print"--------------------"
+		for ii in range(0,iter_ii):
+			fit_sorted1 = next(fit_sorted)
+			summ1,home_away1,game_stats = fit_sorted1
+			"""
+			fit_sorted2 = next(fit_sorted)
+			summ2,home_away2,game_stats = fit_sorted2
+			if ii < iter_ii/2:
+				pay_out,correct_money = self.result_game_multi(fit_sorted1,fit_sorted2,mode)
+			else:
+				pay_out,correct_money = self.result_game_multi(fit_sorted1,fit_sorted2,mode)
+			"""
+			pay_out,correct_money = self.result_game_solo(fit_sorted1,mode)
+			if correct_money == 0.0 and pay_out != 0.0:
+				count_l += 1
+			elif correct_money != 0.0 and pay_out != 0.0:
+				count_w += 1
+#			print pay_out,correct_money
+
+#		for ii in range(0,exec_end-train_start):
+			"""
 			if home_away == 1:
 				count_h += 1
 			elif home_away == -1:
@@ -422,7 +468,7 @@ class MLB_Analysis(GeneticFunctions):
 			else :
 				count_l += 1
 				correct_money = 0
-
+			"""
 			Jaemin.buyin(correct_money)
 			Jaemin.payout(pay_out)
 			MinBudjet = min(MinBudjet,Jaemin.get_Budjet())
@@ -435,6 +481,56 @@ class MLB_Analysis(GeneticFunctions):
 		conn.close()
 		result_queue.put(argument_list_tmp[args])
 		pass
+	def result_game_solo(self,fit_sorted1,mode):
+		summ1,home_away1,game_stats1 = fit_sorted1
+		if abs(home_away1)>1:
+			mode1 = "ou"
+		else:
+			mode1 = "money"
+		result1 = self.result_game(game_stats1,mode1,home_away1)	
+		odds1 = self.odds_game(game_stats1,mode1,home_away1)
+		if mode == "money":
+			if result1 ==  1:
+#return [30.0/(odds1),30.0]
+				return [30.0,30.0*odds1]
+			else:
+				if odds1 == 0.0 :
+					return [0.0,0.0]
+				else:
+#					return [30.0/(odds1),0.0]
+					return [30.0,0.0]
+
+	def result_game_multi(self,fit_sorted1,fit_sorted2,mode):
+		summ1,home_away1,game_stats1 = fit_sorted1
+		summ2,home_away2,game_stats2 = fit_sorted2
+		if abs(home_away1)>1:
+			mode1 = "ou"
+		else:
+			mode1 = "money"
+		if abs(home_away2)>1:
+			mode2 = "ou"
+		else:
+			mode2 = "money"
+		result1 = self.result_game(game_stats1,mode1,home_away1)	
+		result2 = self.result_game(game_stats2,mode2,home_away2)	
+		odds1 = self.odds_game(game_stats1,mode1,home_away1)
+		odds2 = self.odds_game(game_stats2,mode2,home_away2)
+		if mode == "money":
+			if result1 == result2 == 1:
+				return [30.0/(odds1*odds2),30.0]
+			else:
+				if odds1 == 0.0 or odds2 == 0.0:
+					return [0.0,0.0]
+				else:
+					return [30.0/(odds1*odds2),0.0]
+		elif mode == "run":
+			if result1 == result2 == 1:
+				return [30.0/(odds1*odds2),30.0]
+			else:
+				if odds1 == 0.0 or odds2 == 0.0:
+					return [0.0,0.0]
+				else:
+					return [30.0/(odds1*odds2),0.0]
 
 	def result_game(self,game_stats,mode,home_away):
 		if mode == "money":
@@ -451,19 +547,19 @@ class MLB_Analysis(GeneticFunctions):
 			else :
 				return 0
 		elif mode == "run":
-			if home_away == 1 and game_stats[4] != 0:
+			if home_away == 1 and game_stats[4] == 1:
 				return 1
-			elif home_away == -1 and game_stats[5] != 0:
-				return -1
+			elif home_away == -1 and game_stats[5] == 1:
+				return 1
 			else :
-				return 0
+				return -1
 		elif mode == "ou":
-			if home_away == 1 and game_stats[6] == 1:
+			if home_away == 2 and game_stats[6] == 1:
 				return 1
-			elif home_away == -1 and game_stats[6] == -1:
-				return -1
+			elif home_away == -2 and game_stats[6] == -1:
+				return 1
 			else :
-				return 0
+				return -1
 		else:
 			return 0
 		pass
@@ -474,34 +570,128 @@ class MLB_Analysis(GeneticFunctions):
 			elif home_away == -1 :
 				return game_stats[8]
 			else :
-				return 0
+				return 0.0
 		elif mode == "run":
 			if home_away == 1:
 				return game_stats[7]*1.4
 			elif home_away == -1 :
 				return game_stats[8]*1.4
 			else :
-				return 0
+				return 0.0
 		elif mode == "ou":
-			if home_away == 1 :
+			if home_away == 2 :
 				return game_stats[9]
-			elif home_away == -1 :
+			elif home_away == -2 :
 				return game_stats[10]
 			else :
-				return 0
+				return 0.0
 		else:
-			return 0
+			return 0.0
+		pass
+	def greedy_game(self,game_stats,home_stats,away_stats,predict_mode):
+		home_adv = 0.0
+		away_adv = 0.0
+		su = home_stats[1]-away_stats[1]
+		ou = home_stats[2]-away_stats[2]
+		if abs(su)<abs(ou):
+			if su > 0 and game_stats[7] < game_stats[8]:
+				return [abs(su),1]
+			elif su < 0  and game_stats[7] > game_stats[8]:
+				return [abs(su),-1]
+		else:
+			if ou > 0 and game_stats[9] < game_stats[10]:
+				return [abs(ou),2]
+			elif ou < 0 and game_stats[9] > game_stats[10]:
+				return [abs(ou),-2]
+#return [0.0,0.0]
+		for ii in range(0,2):
+			if ii == 0:
+				if home_stats[ii] > away_stats[ii]:
+					away_adv += 1.0
+				else:
+					home_adv += 1.0
+			else:
+				if home_stats[ii] > away_stats[ii]:
+					home_adv += 1.0
+				else:
+					away_adv += 1.0
+					
+		for ii in range(3,len(home_stats)):
+			if ii%3 == 0:
+				if home_stats[ii] > away_stats[ii]:
+					home_adv += 1.0
+				else:
+					away_adv += 1.0
+			else:
+				if ii == 8:
+					if home_stats[ii] > away_stats[ii]:
+						away_adv += 2.0
+					else:
+						home_adv += 2.0
+				else:
+					if home_stats[ii] > away_stats[ii]:
+						away_adv += 1.0
+					else:
+						home_adv += 1.0
+		"""
+		print "---------HOME---------"
+		print game_stats
+		print home_stats
+		print away_stats
+		"""
+		if abs(home_adv-away_adv) < abs(game_stats[7]-game_stats[8])*10.0:
+			if home_adv > away_adv and game_stats[7] < game_stats[8]:
+				if game_stats[2] == 1:
+#					print ["HOME SU",home_adv,away_adv,game_stats[7],home_stats[0:3]]
+					pass
+				else:
+#					print ["HOME SU WRONG",home_adv,away_adv,game_stats[7],home_stats[0:3]]
+					pass
+					
+				return [1/abs(home_adv-away_adv),1]
+			elif home_adv < away_adv and game_stats[7] > game_stats[8]:
+				if game_stats[3] == 1:
+#					print ["AWAY SU ",home_adv,away_adv,game_stats[8],away_stats[0:3]]
+					pass
+				else:
+#					print ["AWAY SU WRONG",home_adv,away_adv,game_stats[8],away_stats[0:3]]
+					pass
+				return [1/abs(home_adv-away_adv),-1]
+			else:
+				return [0,0]
+		else:
+			if home_adv < away_adv and game_stats[7] < game_stats[8]:
+				if game_stats[2] == -1:
+#					print ["AWAY UP ",home_adv,away_adv,game_stats[8],away_stats[0:3]]
+					pass
+				else:
+#					print ["AWAY UP WRONG",home_adv,away_adv,game_stats[8],away_stats[0:3]]
+					pass
+				return [1/abs(home_adv-away_adv),-1]
+			elif home_adv > away_adv and game_stats[7] > game_stats[8]:
+				if game_stats[3] == -1:
+#					print ["HOME UP ",home_adv,away_adv,game_stats[7],home_stats[0:3]]
+					pass
+				else:
+#					print ["HOME UP WRONG",home_adv,away_adv,game_stats[7],home_stats[0:3]]
+					pass
+				return [1/abs(home_adv-away_adv),1]
+			else:
+				return [0,0]
 		pass
 	def predict_game(self,home_chr_stats,away_chr_stats,predict_mode):
 		if predict_mode == "add":
 			home = sum(home_chr_stats)
 			away = sum(away_chr_stats)
-			if home < away:
-				return 1
+			if home > away:
+				return [abs(home-away),1]
 			else:
-				return -1
-		else:
-			return 0
+				return [abs(home-away),-1]
+		elif predict_mode == "consensus":
+			if home_chr_stats[1] > away_chr_stats[1]:
+				return [home_chr_stats[1],1]
+			else:
+				return [away_chr_stats[1],-1]
 		pass
 
 #argument = sys.argv[1]
