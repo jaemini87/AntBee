@@ -12,8 +12,9 @@ import html2text
 import urllib2
 class Bank:
 	db_file = ""
-	def __init__(self,mode):
-		finmlb = open("mlb2014.txt",'r')
+	def __init__(self,mode,db_file):
+		self.input_file = db_file
+		finmlb = open(db_file,'r')
 		fin_line = finmlb.readline()
 		str_league,str_year,pagenumber = fin_line.split("|")
 		self.db_file = mode+"_"+str_league+str_year+".db"
@@ -219,8 +220,8 @@ class Bank:
 		conn.close()
 		return [yes_ou,no_ou]
 		pass
-	def create_database(self,mode):
-		finmlb = open("mlb2014.txt",'r')
+	def create_database(self,mode,today=-1):
+		finmlb = open(self.input_file,'r')
 		while 1:
 			fin_line = finmlb.readline()
 			if not fin_line:
@@ -234,17 +235,16 @@ class Bank:
 			db_file = self.db_file
 			for ii in range(start,pagenumber+1):
 				outputtxt = "./"+str_league+str_year+"/"+str(ii)+"final.txt"
-				"""
-				outputpdf = "./"+league+year+"/"+str(ii)+".pdf"
-				cacheoption = "--cache-dir ./cache_"+league
-				inputurl = "http://www.oddsportal.com/baseball/"+league_url+"/results/#/page/"+str(ii)
-				command = "wkhtmltopdf "+cacheoption+" "+inputurl+" "+outputpdf
-				os.system(command)
-				print command
-				command = "pdftotext -raw "+outputpdf+" "+outputtxt
-				os.system(command)
-				print command
-				"""
+				if today != -1:
+					outputpdf = "./"+str_league+str_year+"/"+str(ii)+".pdf"
+					cacheoption = "--cache-dir ./cache_"+str_league
+					inputurl = "http://www.oddsportal.com/baseball/usa/mlb/results/#/page/"+str(ii)
+					command = "wkhtmltopdf "+cacheoption+" "+inputurl+" "+outputpdf
+					os.system(command)
+					print command
+					command = "pdftotext -raw "+outputpdf+" "+outputtxt
+					os.system(command)
+					print command
 				fin = open(outputtxt, 'r')
 				fin_end = 0
 				fin_start = 0
@@ -729,18 +729,17 @@ class Bank:
 	def get_str_games(self,games,league):
 		pass
 numpy.set_printoptions(precision=2,suppress=True)
-
+"""
 myBank = Bank("all")
 #myBank.create_database("all")
 yes_total = 0.0
 no_total = 0.0
 #myBank.print_db()
 #11 worst
-#"""
 for ii in range(1,30):
 	yes,no = myBank.predict_day(ii,"May",2014,"su")
 	yes_total += yes
 	no_total += no
 	print yes,no
 print yes_total,no_total,yes_total/(yes_total+no_total)
-#"""
+"""
