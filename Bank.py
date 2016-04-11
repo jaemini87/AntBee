@@ -11,13 +11,17 @@ from bs4 import BeautifulSoup,SoupStrainer
 import html2text
 import urllib2
 class Bank:
-	db_file = ""
+	db_file = []
 	def __init__(self,mode,db_file):
-		self.input_file = db_file
+		# db_file is the file name and has its format. splitter is "|".
 		finmlb = open(db_file,'r')
-		fin_line = finmlb.readline()
-		str_league,str_year,pagenumber = fin_line.split("|")
-		self.db_file = mode+"_"+str_league+str_year+".db"
+		while 1:
+			fin_line = finmlb.readline()
+			if not fin_line:
+				break
+			str_league,str_year,pagenumber = fin_line.split("|")
+			self.db_file.append([mode,str_league,str_year,pagenumber])
+		self.create_database()
 		pass
 #	def get_oddsportal(self):
 	def print_db(self):
@@ -220,32 +224,34 @@ class Bank:
 		conn.close()
 		return [yes_ou,no_ou]
 		pass
-	def create_database(self,mode,today=-1):
-		finmlb = open(self.input_file,'r')
-		while 1:
-			fin_line = finmlb.readline()
-			if not fin_line:
-				break
-			str_league,str_year,pagenumber = fin_line.split("|")
+	def create_database(self,today=-1):
+		cached = 1
+		command = "mkdir cache_oddsshark"
+
+		os.system(command)
+		for db_file_itr in self.db_file:
+			mode,str_league,str_year,pagenumber = db_file_itr
+			str_year = "mlb-2015"
 			pagenumber = int(pagenumber)
 			command = "mkdir "+ str_league+str_year
 			os.system(command)
 			start = 2
 #			for ii in range(start,pagenumber+1):
-			db_file = self.db_file
 			for ii in range(start,pagenumber+1):
 				outputtxt = "./"+str_league+str_year+"/"+str(ii)+"final.txt"
-				if today != -1:
+				try:
+					fin = open(outputtxt,'r')
+				except:
 					outputpdf = "./"+str_league+str_year+"/"+str(ii)+".pdf"
 					cacheoption = "--cache-dir ./cache_"+str_league
-					inputurl = "http://www.oddsportal.com/baseball/usa/mlb/results/#/page/"+str(ii)
+					inputurl = "http://www.oddsportal.com/baseball/usa/"+str(str_year)+"/results/#/page/"+str(ii)
 					command = "wkhtmltopdf "+cacheoption+" "+inputurl+" "+outputpdf
 					os.system(command)
 					print command
 					command = "pdftotext -raw "+outputpdf+" "+outputtxt
 					os.system(command)
 					print command
-				fin = open(outputtxt, 'r')
+				fin = open(outputtxt,'r')
 				fin_end = 0
 				fin_start = 0
 				day = 0
@@ -276,7 +282,7 @@ class Bank:
 					elif fin_line.find("Baseball") == 0:
 						fin_en = 1
 					elif fin_start == 1 and fin_end == 0:
-						conn = sql.connect(db_file)
+						conn = sql.connect(mode+"_"+str_league+"_"+str_year+".db")
 						cur = conn.cursor()
 						score_odds = self.get_game_info_from_str(fin_line)
 						endname = max(fin_line.rfind("s"), fin_line.rfind("x"), fin_line.rfind("p"))
@@ -284,21 +290,31 @@ class Bank:
 						team_h  = fin_line[6:dash-1]
 						team_a = fin_line[dash+2:endname+1]
 						time,score_h,score_a,odds_h,odds_a,score_ou,odds_o,odds_u,score_h_full,score_a_full = score_odds
-						hhome = 4
-						aaway = 5
+						hhome = 0
+						aaway = 0
 						score_h_f = 0
 						score_a_f = 0
 						score_h_l = 0
 						score_a_l = 0
+						#1 inn, 2-5 inn, 6-8 inn, 9 inn, 10+ inn
+						score_h_list = [0,0,0,0,0]
+						score_a_list = [0,0,0,0,0]
 						team_h_shark = self.get_str_team_mlb(self.get_int_team_mlb(team_h))
 						team_a_shark = self.get_str_team_mlb(self.get_int_team_mlb(team_a))
 						month_shark = self.get_str_month_mlb(month)
 						stats_list_28 = []
 						su_h  = 1 if (odds_h<odds_a and score_h>score_a) else (-1 if(odds_h<odds_a and score_h<score_a) else 0)
 						su_a  = 1 if (odds_a<odds_h and score_a>score_h) else (-1 if(odds_a<odds_h and score_a<score_h) else 0)
-						run_h = 1 if (odds_h<odds_a and score_h-1>score_a) else (-1 if(odds_h<odds_a and score_h-1<score_a) else 0)
-						run_a = 1 if (odds_a<odds_h and score_a-1>score_h) else (-1 if(odds_a<odds_h and score_a-1<score_h) else 0)
-						ou    = 1 if(score_h+score_a > score_ou) else (0 if (score_h+score_a == score_ou ) else -1)
+						run_h = 1 if (odds_h<odds_a and score_h-1>score_a) else (-1 if(odds_h<odds_a and score_h-1<=score_a) else 0)
+						run_a = 1 if (odds_a<odds_h and score_a-1>score_h) else (-1 if(odds_a<odds_h and score_a-1<=score_h) else 0)
+						run_h_1 = 1 if (odds_h>odds_a and score_h-1>score_a) else (-1 if(odds_h>odds_a and score_h-1<=score_a) else 0)
+						run_a_1 = 1 if (odds_a>odds_h and score_a-1>score_h) else (-1 if(odds_a>odds_h and score_a-1<=score_h) else 0)
+						ou = 1 if(score_h+score_a > score_ou) else (0 if (score_h+score_a == score_ou ) else -1)
+						su = 1  if( su_h == 1 or su_a == 1) else -1
+						utd = 1 if( su_h == -1 or su_a == -1) else -1
+						run_su = 1 if( run_h == 1 or run_a == 1)else -1
+						run_utd = 1 if(run_h_1 == 1 or run_a_1 == 1)else -1
+
 						for ii in range(0,6):
 							stats_list_28.append(0)
 						for ff in range(0,22):
@@ -311,20 +327,61 @@ class Bank:
 							h_earn_h,h_earn_a,h_allow_h,h_allow_a,\
 							bull_h,bull_a,b_off_h,b_off_a,b_def_h,b_def_a = self.get_oddsshark_lxml(team_a_shark,team_h_shark,month_shark,day,year)
 							"""
-							stats_list_28 = self.get_oddsshark_lxml(team_a_shark,team_h_shark,month_shark,day,year)
+							stats_list_28 = self.get_oddsshark_lxml(cached,team_a_shark,team_h_shark,month_shark,day,year)
 #							con_w_a,con_w_h,con_o,con_u = self.get_oddsshark(team_a_shark,team_h_shark,month_shark,day,year)
+						score_h_list_temp = 0
+						score_a_list_temp = 0
 						for home_itr in score_h_full:
-							if hhome > 0:
+							if hhome == 0:
+								score_h_list[0] = home_itr
+							elif hhome < 4:
+								score_h_list_temp += home_itr
+							elif hhome == 4:
+								score_h_list_temp += home_itr
+								score_h_list[1] = score_h_list_temp
+								score_h_list_temp = 0
+							elif hhome < 7:
+								score_h_list_temp += home_itr
+							elif hhome == 7:
+								score_h_list_temp += home_itr
+								score_h_list[2] = score_h_list_temp
+								score_h_list_temp = 0
+							elif hhome == 8:
+								score_h_list[3] = home_itr
+							else:
+								score_h_list_temp += home_itr
+
+							if hhome < 5:
 								score_h_f += home_itr
 							else :
 								score_h_l += home_itr
-							hhome -= 1
+							hhome += 1
+						score_h_list[4] = score_h_list_temp
 						for away_itr in score_a_full:
-							if aaway > 0:
+							if aaway == 0:
+								score_a_list[0] = away_itr
+							elif aaway < 4:
+								score_a_list_temp += away_itr
+							elif aaway == 4:
+								score_a_list_temp += away_itr
+								score_a_list[1] = score_a_list_temp
+								score_a_list_temp = 0
+							elif aaway < 7:
+								score_a_list_temp += away_itr
+							elif aaway == 7:
+								score_a_list_temp += away_itr
+								score_a_list[2] = score_a_list_temp
+								score_a_list_temp = 0
+							elif aaway == 8:
+								score_a_list[3] = away_itr
+							else:
+								score_a_list_temp += away_itr
+							if aaway < 5:
 								score_a_f += away_itr
 							else :
 								score_a_l += away_itr
-							aaway -= 1
+							aaway += 1
+						score_a_list[4] = score_a_list_temp
 						if mode == "score":
 							insert_game = ((season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_f,score_a_f,score_h_l,score_a_l,score_ou,odds_h,odds_a,odds_o,odds_u))
 						elif mode =="su":
@@ -336,6 +393,19 @@ class Bank:
 											]
 							for stat in stats_list_28:
 								insert_game.append(stat)
+						elif mode =="v1":
+							#home winner, home run -1 winner, away run -1 winner, game over/under
+							# 1 for win -1 for lose and 0 for draw.
+							#Result & Odds append 18
+							insert_game = [season,day,month,year,time,team_h,team_a,score_h,score_a,su,utd,run_su,run_utd,ou,odds_h,odds_a,odds_o,odds_u]
+							#Score append
+							for score_stat in score_h_list:
+								insert_game.append(score_stat)
+							for score_stat in score_a_list:
+								insert_game.append(score_stat)
+							for stat in stats_list_28:
+								insert_game.append(stat)
+							#56 arguments
 						print insert_game
 						#cur.execute("""CREATE TABLE IF NOT EXISTS MLB(nid INTEGER primary key AUTOINCREMENT,day INT,month TEXT,year INT,\
 						with conn:
@@ -361,7 +431,17 @@ class Bank:
 								cur.executemany("""INSERT INTO MLB_SU(season,day,month,year,time,team_h,team_a,su_h,su_a,run_h,run_a,ou,odds_h,odds_a,odds_o,odds_u,\
 												P0,P1,C0,C1,C2,C3,S0,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14,S15,S16,S17,S18,S19,S20,S21)\
 												VALUES(?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?)""",(insert_game,))
-
+							elif mode =="v1":
+								cur.execute("""CREATE TABLE IF NOT EXISTS MLB_V1(nid INTEGER primary key AUTOINCREMENT,season TEXT,day INT,month TEXT,\
+												year INTEGER,time INTEGER, team_h TEXT, team_a TEXT, score_h INTEGER, score_a INTEGER, su INTEGER, utd INTEGER, run_su INTEGER, run_utd INTEGER, \
+												ou INTEGER, odds_h REAL, odds_a REAL, odds_o REAL, odds_u REAL, inn_h_1 INTEGER, inn_h_2_5 INTEGER, inn_h_6_8 INTEGER, inn_h_9 INTEGER, inn_h_10 INTEGER,\
+												inn_a_1 INTEGER, inn_a_2_5 INTEGER, inn_a_6_8 INTEGER, inn_a_9 INTEGER, inn_a_10 INTEGER,\
+												P0 INTEGER, P1 INTEGER, C0 INTEGER, C1 INTEGER,C2 INTEGER ,C3 INTEGER, S0 REAL, S1 REAL, S2 REAL, S3 REAL, S4 REAL, S5 REAL, S6 REAL, S7 REAL, S8 REAL, S9 REAL,\
+												S10 REAL, S11 REAL, S12 REAL, S13 REAL, S14 REAL, S15 REAL, S16 REAL ,S17 REAL, S18 REAL,S19 REAL, S20 REAL, S21 REAL)""")
+								cur.executemany("""INSERT INTO MLB_V1(season,day,month,year,time,team_h,team_a,score_h,score_a,su,utd,run_su,run_utd,ou,odds_h,odds_a,odds_o,odds_u,\
+												inn_h_1,inn_h_2_5,inn_h_6_8,inn_h_9,inn_h_10,inn_a_1,inn_a_2_5,inn_a_6_8,inn_a_9,inn_a_10,\
+												P0,P1,C0,C1,C2,C3,S0,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14,S15,S16,S17,S18,S19,S20,S21)\
+												VALUES(?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?)""",(insert_game,))
 						conn.commit()
 						conn.close()
 					# print(fin_line)
@@ -374,7 +454,6 @@ class Bank:
 		for row in rows:
 			print row
 		"""
-		finmlb.close()
 		pass
 	def get_game_info_from_str(self,fin_line):
 		cur_time = int(fin_line[0:2])
@@ -451,10 +530,12 @@ class Bank:
 			odds_a = 1.0 + int(odds_a_denom) * 1.0 / int(odds_a_nom)
 		return [cur_time,int(score_h),int(score_a),odds_h,odds_a,score_ou,odds_o,odds_u,score_h_full,score_a_full]
 		pass
-	def get_oddsshark_lxml(self,team_a_shark,team_h_shark,month_shark,day,year):
+	def get_oddsshark_lxml(self,cached,team_a_shark,team_h_shark,month_shark,day,year):
 		#power ranking 2 elements
 		#stats 22 elements
 		#consensus 4 elements
+		fout_name = str(team_a_shark)+str(team_h_shark)+str(month_shark)+str(day)+str(year)
+		fout_txt = "./cache_oddsshark/"+fout_name+".txt"
 		return_list =[]
 		for ii in range(0,6):
 			return_list.append(0)
@@ -462,61 +543,79 @@ class Bank:
 			return_list.append(0.0)
 		if str(team_h_shark) == "-1" or str(team_a_shark) == "-1":
 			return return_list
-		while 1:
-			url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
-			print url
-			try:
-				page = requests.get(url)
-			except requests.HTTPError,e:
-				print e.code
-				page = requests.get(url)
+		try:
+			fout = open(fout_txt,"r")
+		except IOError:
+			foutw = open(fout_txt,"w")
+			while 1:
+				url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
+				print url
+				try:
+					page = requests.get(url)
+				except requests.HTTPError,e:
+					print e.code
+					page = requests.get(url)
 
-			tree = html.fromstring(page.text)
+				tree = html.fromstring(page.text)
 
-			percent = tree.xpath('//span[@class="consensus_percent"]/text()')
-			power = tree.xpath('//span[@class="score"]/text()')
-			home = tree.xpath('//span[@class="home"]/text()')
-			away = tree.xpath('//span[@class="away"]/text()')
-			home_f = map(float,home)
-			away_f = map(float,away)
-			ii=0
-			for span in power:
-				if ii == 2:
-					break
-				ints = ""
-				for char in span:
-					if len(ints) > 1:
+				percent = tree.xpath('//span[@class="consensus_percent"]/text()')
+				power = tree.xpath('//span[@class="score"]/text()')
+				home = tree.xpath('//span[@class="home"]/text()')
+				away = tree.xpath('//span[@class="away"]/text()')
+				home_f = map(float,home)
+				away_f = map(float,away)
+				ii=0
+				for span in power:
+					if ii == 2:
 						break
-					if char.isdigit():
-						ints += char
-				return_list[ii] = int(ints)
-				ii+=1
-			ii=2
-			for span in percent:
-				ints = ""
-				for char in span:
-					if len(ints) > 1:
-						break
-					if char.isdigit():
-						ints += char
-				return_list[ii] = int(ints)
-				ii+=1
-			return_list[6:17] = home_f[0:11]
-			return_list[17:28] = away_f[0:11]
-			print return_list
-			if len(return_list) != 28:
-				if day == 1:
-					return_list =[]
-					for ii in range(0,6):
-						return_list.append(0)
-					for ff in range(0,22):
-						return_list.append(0.0)
-					return return_list
+					ints = ""
+					for char in span:
+						if len(ints) > 1:
+							break
+						if char.isdigit():
+							ints += char
+					return_list[ii] = int(ints)
+					ii+=1
+				ii=2
+				for span in percent:
+					ints = ""
+					for char in span:
+						if len(ints) > 1:
+							break
+						if char.isdigit():
+							ints += char
+					return_list[ii] = int(ints)
+					ii+=1
+				return_list[6:17] = home_f[0:11]
+				return_list[17:28] = away_f[0:11]
+				print return_list
+				if len(return_list) != 28:
+					if day == 1:
+						return_list =[]
+						for ii in range(0,6):
+							return_list.append(0)
+						for ff in range(0,22):
+							return_list.append(0.0)
+						foutw.write(str(return_list))
+						foutw.close()
+						return return_list
+					else:
+						day -= 1
 				else:
-					day -= 1
-			else:
-				return return_list
-
+					foutw.write(str(return_list))
+					foutw.close()
+					return return_list
+		else:
+			fout_readline = fout.readline()
+			return_list_temp = fout_readline[1:len(fout_readline)-1].split(",")
+			ii=0
+			for itr in return_list_temp:
+				if ii < 6:
+					return_list[ii] = (int(itr))
+				else:
+					return_list[ii] = (float(itr))
+				ii+=1
+			return return_list
 	def get_oddsshark(self,team_a_shark,team_h_shark,month_shark,day,year):
 		if str(team_h_shark) == "-1" or str(team_a_shark) == "-1":
 			return [50,50,50,50]
@@ -729,8 +828,9 @@ class Bank:
 	def get_str_games(self,games,league):
 		pass
 numpy.set_printoptions(precision=2,suppress=True)
-"""
-myBank = Bank("all")
+#"""
+db_file = "mlb.txt"
+myBank = Bank("v1",db_file)
 #myBank.create_database("all")
 yes_total = 0.0
 no_total = 0.0
@@ -742,4 +842,4 @@ for ii in range(1,30):
 	no_total += no
 	print yes,no
 print yes_total,no_total,yes_total/(yes_total+no_total)
-"""
+#"""
