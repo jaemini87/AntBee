@@ -1,4 +1,4 @@
-EU Odds Time: 04 Apr 17:00, GMT 0
+US Odds Time: 11 Apr 16:49, GMT 0
 Username: Password: Login REGISTER
 advertisement
 Baseball » USA »
@@ -10,59 +10,59 @@ change the time zone here to GMT +9 or click the time zone selector at the top r
 corner.
 MLB 2015
 18 Aug 2015 1 2 B's
-23:05 Philadelphia Phillies - Toronto Blue Jays 5:8 2.47 1.58 15
-02:10 San Diego Padres - Atlanta Braves 5:3 1.63 2.37 15
-02:05 Los Angeles Angels - Chicago White Sox 2:1 1.62 2.37 15
-00:10 Houston Astros - Tampa Bay Rays 2:9 1.60 2.40 15
-00:10 Milwaukee Brewers - Miami Marlins 2:6 1.65 2.32 15
-00:09 St.Louis Cardinals - San Francisco Giants 2:1 1.58 2.45 15
-00:05 Texas Rangers - Seattle Mariners 4:3 1.70 2.18 15
+23:05 Philadelphia Phillies - Toronto Blue Jays 5:8 +147 -172 15
+02:10 San Diego Padres - Atlanta Braves 5:3 -159 +137 15
+02:05 Los Angeles Angels - Chicago White Sox 2:1 -161 +137 15
+00:10 Houston Astros - Tampa Bay Rays 2:9 -167 +140 15
+00:10 Milwaukee Brewers - Miami Marlins 2:6 -154 +131 15
+00:09 St.Louis Cardinals - San Francisco Giants 2:1 -172 +145 15
+00:05 Texas Rangers - Seattle Mariners 4:3 -143 +118 15
 17 Aug 2015 1 2 B's
-23:10 Boston Red Sox - Cleveland Indians 2:8 2.02 1.82 15
-23:05 Baltimore Orioles - Oakland Athletics 4:2 1.90 1.95 15
-23:05 New York Yankees - Minnesota Twins 8:7 1.63 2.36 15
-23:05 Pittsburgh Pirates - Arizona Diamondbacks 1:4 1.46 2.82 15
-00:10 Kansas City Royals - Los Angeles Angels 4:3 1.75 2.14 15
+23:10 Boston Red Sox - Cleveland Indians 2:8 +102 -122 15
+23:05 Baltimore Orioles - Oakland Athletics 4:2 -111 -105 15
+23:05 New York Yankees - Minnesota Twins 8:7 -159 +136 15
+23:05 Pittsburgh Pirates - Arizona Diamondbacks 1:4 -217 +181 15
+00:10 Kansas City Royals - Los Angeles Angels 4:3 -133 +114 15
 16 Aug 2015 1 2 B's
-20:10 Colorado Rockies - San Diego Padres 5:0 1.91 1.94 15
-20:10 Los Angeles Dodgers - Cincinnati Reds 2:1 1.43 2.94 15
-20:05 San Francisco Giants - Washington Nationals 5:0 1.65 2.30 15
-19:05 Texas Rangers - Tampa Bay Rays 5:3 1.87 1.98 15
-18:15 St.Louis Cardinals - Miami Marlins 4:6 1.41 3.04 15
-18:10 Chicago White Sox - Chicago Cubs 3:1 1.52 2.64 15
-18:10 Houston Astros - Detroit Tigers 6:5 1.56 2.54 15
-18:10 Milwaukee Brewers - Philadelphia Phillies 6:1 1.58 2.47 15
-18:10 Minnesota Twins - Cleveland Indians 4:1 2.17 1.73 15
-17:35 Atlanta Braves - Arizona Diamondbacks 2:1 2.03 1.83 15
-17:35 Baltimore Orioles - Oakland Athletics 18:2 1.59 2.44 15
-17:35 Boston Red Sox - Seattle Mariners 8:10 1.83 2.03 15
-17:10 New York Mets - Pittsburgh Pirates 1:8 1.58 2.47 15
-17:07 Toronto Blue Jays - New York Yankees 3:1 1.79 2.07 15
-02:05 San Francisco Giants - Washington Nationals 12:6 1.85 1.97 15
-01:10 Los Angeles Dodgers - Cincinnati Reds 8:3 1.55 2.54 15
-00:10 Colorado Rockies - San Diego Padres 5:7 1.85 2.01 15
-00:05 Texas Rangers - Tampa Bay Rays 12:4 2.09 1.78 15
+20:10 Colorado Rockies - San Diego Padres 5:0 -110 -106 15
+20:10 Los Angeles Dodgers - Cincinnati Reds 2:1 -233 +194 15
+20:05 San Francisco Giants - Washington Nationals 5:0 -154 +129 15
+19:05 Texas Rangers - Tampa Bay Rays 5:3 -115 -102 15
+18:15 St.Louis Cardinals - Miami Marlins 4:6 -244 +204 15
+18:10 Chicago White Sox - Chicago Cubs 3:1 -192 +164 15
+18:10 Houston Astros - Detroit Tigers 6:5 -179 +154 15
+18:10 Milwaukee Brewers - Philadelphia Phillies 6:1 -172 +147 15
+18:10 Minnesota Twins - Cleveland Indians 4:1 +117 -137 15
+17:35 Atlanta Braves - Arizona Diamondbacks 2:1 +102 -120 15
+17:35 Baltimore Orioles - Oakland Athletics 18:2 -169 +144 15
+17:35 Boston Red Sox - Seattle Mariners 8:10 -120 +102 15
+17:10 New York Mets - Pittsburgh Pirates 1:8 -172 +147 15
+17:07 Toronto Blue Jays - New York Yankees 3:1 -127 +106 15
+02:05 San Francisco Giants - Washington Nationals 12:6 -118 -103 15
+01:10 Los Angeles Dodgers - Cincinnati Reds 8:3 -182 +154 15
+00:10 Colorado Rockies - San Diego Padres 5:7 -118 +100 15
+00:05 Texas Rangers - Tampa Bay Rays 12:4 +108 -128 15
 15 Aug 2015 1 2 B's
-23:15 St.Louis Cardinals - Miami Marlins 6:2 1.50 2.71 14
-23:10 Atlanta Braves - Arizona Diamondbacks 4:8 2.36 1.62 15
-23:10 Chicago White Sox - Chicago Cubs 3:6 2.02 1.81 15
-23:10 Houston Astros - Detroit Tigers 2:4 1.66 2.27 15
-23:10 Kansas City Royals - Los Angeles Angels 9:4 1.65 2.31 15
-23:10 Milwaukee Brewers - Philadelphia Phillies 4:2 1.56 2.52 15
-23:10 Minnesota Twins - Cleveland Indians 4:1 1.85 1.98 15
-23:10 New York Mets - Pittsburgh Pirates 3:5 1.88 1.95 15
-23:05 Baltimore Orioles - Oakland Athletics 4:3 1.74 2.14 15
-17:35 Boston Red Sox - Seattle Mariners 22:10 2.09 1.78 15
-17:07 Toronto Blue Jays - New York Yankees 1:4 1.79 2.07 15
-02:15 San Francisco Giants - Washington Nationals 8:5 2.15 1.73 15
-02:10 Los Angeles Dodgers - Cincinnati Reds 5:3 1.58 2.49 14
-00:40 Colorado Rockies - San Diego Padres 5:9 2.17 1.73 15
-00:15 St.Louis Cardinals - Miami Marlins 3:1 1.43 2.92 15
-00:10 Houston Astros - Detroit Tigers 5:1 1.48 2.77 15
-00:10 Kansas City Royals - Los Angeles Angels 4:1 1.79 2.05 15
-00:10 Milwaukee Brewers - Philadelphia Phillies 3:1 1.57 2.49 15
-00:10 Minnesota Twins - Cleveland Indians 1:6 2.18 1.73 13
-00:05 Texas Rangers - Tampa Bay Rays 5:3 1.93 1.91 15
+23:15 St.Louis Cardinals - Miami Marlins 6:2 -200 +171 14
+23:10 Atlanta Braves - Arizona Diamondbacks 4:8 +136 -161 15
+23:10 Chicago White Sox - Chicago Cubs 3:6 +102 -123 15
+23:10 Houston Astros - Detroit Tigers 2:4 -152 +127 15
+23:10 Kansas City Royals - Los Angeles Angels 9:4 -154 +131 15
+23:10 Milwaukee Brewers - Philadelphia Phillies 4:2 -179 +152 15
+23:10 Minnesota Twins - Cleveland Indians 4:1 -118 -102 15
+23:10 New York Mets - Pittsburgh Pirates 3:5 -114 -105 15
+23:05 Baltimore Orioles - Oakland Athletics 4:3 -135 +114 15
+17:35 Boston Red Sox - Seattle Mariners 22:10 +108 -128 15
+17:07 Toronto Blue Jays - New York Yankees 1:4 -127 +106 15
+02:15 San Francisco Giants - Washington Nationals 8:5 +114 -137 15
+02:10 Los Angeles Dodgers - Cincinnati Reds 5:3 -172 +149 14
+00:40 Colorado Rockies - San Diego Padres 5:9 +117 -137 15
+00:15 St.Louis Cardinals - Miami Marlins 3:1 -233 +192 15
+00:10 Houston Astros - Detroit Tigers 5:1 -208 +177 15
+00:10 Kansas City Royals - Los Angeles Angels 4:1 -127 +104 15
+00:10 Milwaukee Brewers - Philadelphia Phillies 3:1 -175 +149 15
+00:10 Minnesota Twins - Cleveland Indians 1:6 +118 -137 13
+00:05 Texas Rangers - Tampa Bay Rays 5:3 -108 -110 15
 Manage My Leagues
 Search
 team / player
@@ -73,35 +73,37 @@ BASKETBALL
 HOCKEY
 HANDBALL
 BASEBALL
+AMERICANFOOTBALL
 RUGBY UNION
 RUGBY LEAGUE
 VOLLEYBALL
 FLOORBALL
 FUTSAL
 CRICKET
+SNOOKER
 DARTS
 BOXING
-BEACH VOLLEYBALL
 AUSSIE RULES
 BADMINTON
-WATER POLO
 ESPORTS
 MMA
 My Coupon
-ATP Marrakech ATP Houston
-WTA Katowice WTA Charleston
-Champs League Europa League
-Premier League Bundesliga
-Primera Division Ligue 1
-Serie A NBA
-Euroleague MLB
-AFL NHL
-Premier League IPL
+ATP Monte Carlo WTA Bogota
+WTA Fed Cup Champs League
+Europa League Premier League
+Bundesliga Primera Division
+Ligue 1 Serie A
+NBA Euroleague
+MLB AFL
+NHL Premier League
+IPL
 No bets selected yet. To add a bet click the
 odds while browsing through OddsPortal!
 Log in to save and share your coupons.
 USA (Baseball)
-MLB (13)
+MLB (12)
+IL (7)
+PCL (9)
 USA
 Betting Tools
 Dropping Odds

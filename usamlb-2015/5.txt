@@ -1,67 +1,69 @@
-UK Odds Time: 04 Apr 16:19, GMT 0
+EU Odds Time: 11 Apr 15:12, GMT 0
 Username: Password: Login REGISTER
 advertisement
 Baseball » USA »
 NEXT MATCHES RESULTS STANDINGS
 2016 2015 2014 2013 2012 2011 2010 2009 2008 2007 2006
 MLB 2015 Results & Historical Odds
+We have noticed that you may be located in a different time zone. You may want to
+change the time zone here to GMT +9 or click the time zone selector at the top right
+corner.
 MLB 2015
 23 Sep 2015 1 2 B's
-23:10 Boston Red Sox - Tampa Bay Rays 2:6 21/25 51/50 15
-23:07 Toronto Blue Jays - New York Yankees 4:0 13/25 163/100 15
-23:05 Washington Nationals - Baltimore Orioles 3:4 11/20 39/25 15
-18:10 Houston Astros - Los Angeles Angels 5:6 29/50 149/100 15
-17:08 Detroit Tigers - Chicago White Sox 7:4 73/100 59/50 13
-02:10 Los Angeles Dodgers - Arizona Diamondbacks 0:8 16/25 133/100 15
-02:10 San Diego Padres - San Francisco Giants 2:4 71/100 6/5 15
-02:05 Oakland Athletics - Texas Rangers 6:8 21/20 41/50 15
-00:40 Colorado Rockies - Pittsburgh Pirates 3:6 63/50 17/25 15
-00:15 St.Louis Cardinals - Cincinnati Reds 3:1 49/100 43/25 15
-00:10 Houston Astros - Los Angeles Angels 3:4 29/50 147/100 15
-00:10 Kansas City Royals - Seattle Mariners 2:11 93/100 93/100 15
-00:10 Minnesota Twins - Cleveland Indians 3:1 21/20 81/100 15
-00:05 Chicago Cubs - Milwaukee Brewers 4:0 3/10 69/25 14
+23:10 Boston Red Sox - Tampa Bay Rays 2:6 1.84 2.02 15
+23:07 Toronto Blue Jays - New York Yankees 4:0 1.52 2.63 15
+23:05 Washington Nationals - Baltimore Orioles 3:4 1.55 2.56 15
+18:10 Houston Astros - Los Angeles Angels 5:6 1.58 2.49 15
+17:08 Detroit Tigers - Chicago White Sox 7:4 1.73 2.18 13
+02:10 Los Angeles Dodgers - Arizona Diamondbacks 0:8 1.64 2.33 15
+02:10 San Diego Padres - San Francisco Giants 2:4 1.71 2.20 15
+02:05 Oakland Athletics - Texas Rangers 6:8 2.05 1.82 15
+00:40 Colorado Rockies - Pittsburgh Pirates 3:6 2.26 1.68 15
+00:15 St.Louis Cardinals - Cincinnati Reds 3:1 1.49 2.72 15
+00:10 Houston Astros - Los Angeles Angels 3:4 1.58 2.47 15
+00:10 Kansas City Royals - Seattle Mariners 2:11 1.93 1.93 15
+00:10 Minnesota Twins - Cleveland Indians 3:1 2.05 1.81 15
+00:05 Chicago Cubs - Milwaukee Brewers 4:0 1.30 3.76 14
 22 Sep 2015 1 2 B's
-23:10 Boston Red Sox - Tampa Bay Rays 2:5 17/20 1/1 15
-23:10 Miami Marlins - Philadelphia Phillies 2:6 29/50 37/25 15
-23:10 New York Mets - Atlanta Braves 2:6 49/100 173/100 15
-23:08 Detroit Tigers - Chicago White Sox 2:1 97/100 22/25 15
-23:07 Toronto Blue Jays - New York Yankees 4:6 91/100 47/50 15
-23:05 Washington Nationals - Baltimore Orioles 1:4 17/25 127/100 14
-02:10 Los Angeles Dodgers - Arizona Diamondbacks 4:8 57/100 151/100 15
-00:40 Colorado Rockies - Pittsburgh Pirates 3:9 49/50 43/50 15
-00:15 St.Louis Cardinals - Cincinnati Reds 2:1 29/50 149/100 15
-00:10 Houston Astros - Los Angeles Angels 6:3 49/100 171/100 15
-00:05 Chicago Cubs - Milwaukee Brewers 9:5 9/20 37/20 15
+23:10 Boston Red Sox - Tampa Bay Rays 2:5 1.85 2.00 15
+23:10 Miami Marlins - Philadelphia Phillies 2:6 1.58 2.48 15
+23:10 New York Mets - Atlanta Braves 2:6 1.49 2.73 15
+23:08 Detroit Tigers - Chicago White Sox 2:1 1.97 1.88 15
+23:07 Toronto Blue Jays - New York Yankees 4:6 1.91 1.94 15
+23:05 Washington Nationals - Baltimore Orioles 1:4 1.68 2.27 14
+02:10 Los Angeles Dodgers - Arizona Diamondbacks 4:8 1.57 2.51 15
+00:40 Colorado Rockies - Pittsburgh Pirates 3:9 1.98 1.86 15
+00:15 St.Louis Cardinals - Cincinnati Reds 2:1 1.58 2.49 15
+00:10 Houston Astros - Los Angeles Angels 6:3 1.49 2.71 15
+00:05 Chicago Cubs - Milwaukee Brewers 9:5 1.45 2.85 15
 21 Sep 2015 1 2 B's
-23:10 Boston Red Sox - Tampa Bay Rays 8:7 51/50 21/25 15
-23:10 New York Mets - Atlanta Braves 4:0 14/25 3/2 15
-23:08 Detroit Tigers - Chicago White Sox 2:3 93/100 23/25 11
-23:07 Toronto Blue Jays - New York Yankees 4:2 21/50 2/1 15
-17:08 Detroit Tigers - Chicago White Sox 0:2 31/25 71/100 14
-00:08 New York Mets - New York Yankees 2:11 63/100 137/100 15
+23:10 Boston Red Sox - Tampa Bay Rays 8:7 2.02 1.84 15
+23:10 New York Mets - Atlanta Braves 4:0 1.56 2.50 15
+23:08 Detroit Tigers - Chicago White Sox 2:3 1.93 1.92 11
+23:07 Toronto Blue Jays - New York Yankees 4:2 1.42 3.00 15
+17:08 Detroit Tigers - Chicago White Sox 0:2 2.24 1.71 14
+00:08 New York Mets - New York Yankees 2:11 1.63 2.37 15
 20 Sep 2015 1 2 B's
-20:10 Colorado Rockies - San Diego Padres 4:10 109/100 79/100 15
-20:10 Los Angeles Dodgers - Pittsburgh Pirates 3:4 111/100 77/100 15
-20:05 San Francisco Giants - Arizona Diamondbacks 5:1 3/4 23/20 14
-19:05 Texas Rangers - Seattle Mariners 2:9 23/25 93/100 15
-18:20 Chicago Cubs - St.Louis Cardinals 3:4 71/100 119/100 15
-18:10 Houston Astros - Oakland Athletics 5:1 9/20 93/50 15
-18:10 Milwaukee Brewers - Cincinnati Reds 8:4 101/100 17/20 15
-18:10 Minnesota Twins - Los Angeles Angels 8:1 91/100 19/20 15
-17:35 Atlanta Braves - Philadelphia Phillies 2:1 69/100 5/4 15
-17:35 Washington Nationals - Miami Marlins 13:3 7/20 117/50 14
-17:10 Cleveland Indians - Chicago White Sox 6:3 57/100 151/100 15
-17:10 Tampa Bay Rays - Baltimore Orioles 7:6 24/25 89/100 15
-17:08 Detroit Tigers - Kansas City Royals 3:10 13/10 33/50 15
-17:07 Toronto Blue Jays - Boston Red Sox 3:4 51/100 167/100 15
-01:10 Los Angeles Dodgers - Pittsburgh Pirates 2:3 13/25 163/100 15
-00:10 Colorado Rockies - San Diego Padres 10:2 93/100 93/100 15
-00:05 Texas Rangers - Seattle Mariners 10:1 27/50 157/100 15
+20:10 Colorado Rockies - San Diego Padres 4:10 2.09 1.79 15
+20:10 Los Angeles Dodgers - Pittsburgh Pirates 3:4 2.11 1.77 15
+20:05 San Francisco Giants - Arizona Diamondbacks 5:1 1.75 2.15 14
+19:05 Texas Rangers - Seattle Mariners 2:9 1.92 1.93 15
+18:20 Chicago Cubs - St.Louis Cardinals 3:4 1.71 2.19 15
+18:10 Houston Astros - Oakland Athletics 5:1 1.45 2.86 15
+18:10 Milwaukee Brewers - Cincinnati Reds 8:4 2.01 1.85 15
+18:10 Minnesota Twins - Los Angeles Angels 8:1 1.91 1.95 15
+17:35 Atlanta Braves - Philadelphia Phillies 2:1 1.69 2.25 15
+17:35 Washington Nationals - Miami Marlins 13:3 1.35 3.34 14
+17:10 Cleveland Indians - Chicago White Sox 6:3 1.57 2.51 15
+17:10 Tampa Bay Rays - Baltimore Orioles 7:6 1.96 1.89 15
+17:08 Detroit Tigers - Kansas City Royals 3:10 2.30 1.66 15
+17:07 Toronto Blue Jays - Boston Red Sox 3:4 1.51 2.67 15
+01:10 Los Angeles Dodgers - Pittsburgh Pirates 2:3 1.52 2.63 15
+00:10 Colorado Rockies - San Diego Padres 10:2 1.93 1.93 15
+00:05 Texas Rangers - Seattle Mariners 10:1 1.54 2.57 15
 19 Sep 2015 1 2 B's
-23:10 Atlanta Braves - Philadelphia Phillies 2:1 71/100 61/50 15
-23:10 Milwaukee Brewers - Cincinnati Reds 7:9 71/100 121/100 15
-|« « 1 2 3 4 5 6 7 8 9 10 11 » »|
+23:10 Atlanta Braves - Philadelphia Phillies 2:1 1.71 2.22 15
+23:10 Milwaukee Brewers - Cincinnati Reds 7:9 1.71 2.21 15
 Manage My Leagues
 Search
 team / player
@@ -72,35 +74,37 @@ BASKETBALL
 HOCKEY
 HANDBALL
 BASEBALL
+AMERICANFOOTBALL
 RUGBY UNION
 RUGBY LEAGUE
 VOLLEYBALL
 FLOORBALL
 FUTSAL
 CRICKET
+SNOOKER
 DARTS
 BOXING
-BEACH VOLLEYBALL
 AUSSIE RULES
 BADMINTON
-WATER POLO
 ESPORTS
 MMA
 My Coupon
-ATP Marrakech ATP Houston
-WTA Katowice WTA Charleston
-Champs League Europa League
-Premier League Bundesliga
-Primera Division Ligue 1
-Serie A NBA
-Euroleague MLB
-AFL NHL
-Premier League IPL
+ATP Monte Carlo WTA Bogota
+WTA Fed Cup Champs League
+Europa League Premier League
+Bundesliga Primera Division
+Ligue 1 Serie A
+NBA Euroleague
+MLB AFL
+NHL Premier League
+IPL
 No bets selected yet. To add a bet click the
 odds while browsing through OddsPortal!
 Log in to save and share your coupons.
 USA (Baseball)
-MLB (13)
+MLB (12)
+IL (7)
+PCL (9)
 USA
 Betting Tools
 Dropping Odds
@@ -138,7 +142,8 @@ advertisement
 COMMUNITY LIVE SCORES BOOKMAKERS
 ODDS COMPARISON
 HOME NEXT MATCHES DROPPING ODDS SURE BETS IN-PLAY ODDS ALL EVENTS BETTING TOOLS
-Add "MLB 2015" to My Leagues
+|« « 1 2 3 4 5 6 7 8 9 10 11 » »|
+Add "MLB 2015" to My Leagues
 About MLB
 MLB, Major League Baseball, is the biggest professional baseball competition and was founded in 1869. MLB
 betting odds can be found across OddsPortal.com
