@@ -239,23 +239,30 @@ class Bank:
 			for ii in range(start,pagenumber+1):
 				if mode == "half":
 					outputtxt = "./"+str_league+str_year+"/"+str(ii)+str(mode)+"_final.txt"
+				elif mode == "v2":
+					outputtxt = "./"+str_league+str_year+"/final"+str(ii)+str(mode)+".txt"
 				else:
 					outputtxt = "./"+str_league+str_year+"/"+str(ii)+"final.txt"
+				Parser(ii,db_file_itr)
+				"""
 				try:
 					fin = open(outputtxt,'r')
+					Parser(ii,db_file_itr)
 				except:
 					Parser(ii,db_file_itr)
-					"""
-					outputpdf = "./"+str_league+str_year+"/"+str(ii)+".pdf"
-					cacheoption = "--cache-dir ./cache_"+str_league
-					inputurl = "http://www.oddsportal.com/baseball/usa/"+str(str_year)+"/results/#/page/"+str(ii)
-					command = "wkhtmltopdf "+cacheoption+" "+inputurl+" "+outputpdf
-					os.system(command)
-					print command
-					command = "pdftotext -raw "+outputpdf+" "+outputtxt
-					os.system(command)
-					print command
-					"""
+				"""
+				"""
+				outputpdf = "./"+str_league+str_year+"/"+str(ii)+".pdf"
+				cacheoption = "--cache-dir ./cache_"+str_league
+				inputurl = "http://www.oddsportal.com/baseball/usa/"+str(str_year)+"/results/#/page/"+str(ii)
+				command = "wkhtmltopdf "+cacheoption+" "+inputurl+" "+outputpdf
+				os.system(command)
+				print command
+				command = "pdftotext -raw "+outputpdf+" "+outputtxt
+				os.system(command)
+				print command
+			 """
+
 				fin = open(outputtxt,'r')
 				fin_end = 0
 				fin_start = 0
@@ -264,6 +271,7 @@ class Bank:
 				month = ""
 				while 1:
 					fin_line = fin.readline()
+					print fin_line
 					if not fin_line: break
 					if fin_line.find("1 2 B") != -1:
 						fin_start = 1
@@ -290,13 +298,14 @@ class Bank:
 						conn = sql.connect(mode+"_"+str_league+"_"+str_year+".db")
 						cur = conn.cursor()
 						score_odds = self.get_game_info_from_str(mode,fin_line)
-						print fin_line
 						endname = max(fin_line.rfind("s"), fin_line.rfind("x"), fin_line.rfind("p"))
 						dash = fin_line.find("-")
 						team_h  = fin_line[6:dash-1]
 						team_a = fin_line[dash+2:endname+1]
-						if mode != "half":
+						if mode == "half":
 							time,score_h,score_a,odds_h,odds_a,score_ou,odds_o,odds_u,score_h_full,score_a_full = score_odds
+						elif mode == "v2":
+							time,score_h,score_a,odds_h,odds_a,odds_h_half,odds_a_half,score_ou,score_ou_half,odds_o,odds_u,odds_o_half,odds_u_half,score_h_full,score_a_full = score_odds
 						else:
 							time,score_h,score_a,odds_h,odds_a,score_ou,odds_o,odds_u,score_h_full,score_a_full = score_odds
 						hhome = 0
@@ -336,8 +345,8 @@ class Bank:
 							h_earn_h,h_earn_a,h_allow_h,h_allow_a,\
 							bull_h,bull_a,b_off_h,b_off_a,b_def_h,b_def_a = self.get_oddsshark_lxml(team_a_shark,team_h_shark,month_shark,day,year)
 							"""
-							stats_list_28 = self.get_oddsshark_lxml(cached,team_a_shark,team_h_shark,month_shark,day,year)
-#							con_w_a,con_w_h,con_o,con_u = self.get_oddsshark(team_a_shark,team_h_shark,month_shark,day,year)
+	#							con_w_a,con_w_h,con_o,con_u = self.get_oddsshark(team_a_shark,team_h_shark,month_shark,day,year)
+						stats_list_28 = self.get_oddsshark_lxml(cached,team_a_shark,team_h_shark,month_shark,day,year)
 						score_h_list_temp = 0
 						score_a_list_temp = 0
 						for home_itr in score_h_full:
@@ -447,7 +456,23 @@ class Bank:
 								insert_game.append(score_stat)
 							for stat in stats_list_28:
 								insert_game.append(stat)
-							#56 arguments
+						elif mode =="v2":
+							# 1 for win -1 for lose and 0 for draw.
+							#Result & Odds append 18
+							score_h_half = sum(score_h_full[0:5])
+							score_a_half = sum(score_a_full[0:5])
+							#21 argurments
+							insert_game = [season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_half,score_a_half,score_ou,score_ou_half,odds_h,odds_a,odds_h_half,odds_a_half,odds_o,odds_u,odds_o_half,odds_u_half]
+							#Score append
+							#20 arguments
+							for score_stat in score_h_full:
+								insert_game.append(score_stat)
+							for score_stat in score_a_full:
+								insert_game.append(score_stat)
+							#28 arguments
+							for stat in stats_list_28:
+								insert_game.append(stat)
+							#69 arguments
 						print insert_game
 						#cur.execute("""CREATE TABLE IF NOT EXISTS MLB(nid INTEGER primary key AUTOINCREMENT,day INT,month TEXT,year INT,\
 						with conn:
@@ -494,9 +519,30 @@ class Bank:
 												inn_h_1,inn_h_2_5,inn_h_6_8,inn_h_9,inn_h_10,inn_a_1,inn_a_2_5,inn_a_6_8,inn_a_9,inn_a_10,\
 												P0,P1,C0,C1,C2,C3,S0,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14,S15,S16,S17,S18,S19,S20,S21)\
 												VALUES(?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?)""",(insert_game,))
+							elif mode =="v2":
+								print insert_game
+								cur.execute("""CREATE TABLE IF NOT EXISTS MLB_V2(nid INTEGER primary key AUTOINCREMENT,season TEXT,day INT,month TEXT,\
+												year INTEGER,time INTEGER, team_h TEXT, team_a TEXT, score_h_full INTEGER, score_a_full INTEGER, score_h_half INTEGER, score_a_half INTEGER,\
+												odds_h_full REAL, odds_a_full REAL, odds_h_half REAL, odds_a_half REAL, ou_full REAL, ou_half REAL, over_full REAL, under_full REAL,\
+												over_half REAL, under_half REAL,\
+												inn_h_1 INTEGER, inn_h_2 INTEGER, inn_h_3 INTEGER, inn_h_4 INTEGER, inn_h_5 INTEGER, inn_h_6 INTEGER, inn_h_7 INTEGER, inn_h_8 INTEGER, inn_h_9 INTEGER,inn_h_e INTEGER,\
+												inn_a_1 INTEGER, inn_a_2 INTEGER, inn_a_3 INTEGER, inn_a_4 INTEGER, inn_a_5 INTEGER, inn_a_6 INTEGER, inn_a_7 INTEGER, inn_a_8 INTEGER, inn_a_9 INTEGER,inn_a_e INTEGER,\
+												pow_h INTEGER, pow_a INTEGER, vot_sco_h INTEGER, vot_sco_a INTEGER, v_ou_h INTEGER ,v_ou_a INTEGER,\
+												run_sco_h REAL, run_all_h REAL, team_era_h REAL, run_sco_rd_h REAL, run_all_rd_h REAL, str_era_h REAL, off_hit_h REAL, hit_all_h REAL, bul_inn_h REAL, off_wal_h REAL, def_wal_h REAL, \
+												run_sco_a REAL, run_all_a REAL, team_era_a REAL, run_sco_rd_a REAL, run_all_rd_a REAL, str_era_a REAL, off_ait_a REAL, hit_all_a REAL, bul_inn_a REAL, off_wal_a REAL, def_wal_a REAL)""")
+								cur.executemany("""INSERT INTO MLB_V2(season ,day ,month ,\
+												year ,time , team_h , team_a , score_h_full , score_a_full , score_h_half , score_a_half ,\
+												odds_h_full , odds_a_full , odds_h_half , odds_a_half , ou_full , ou_half , over_full , under_full ,\
+												over_half , under_half ,\
+												inn_h_1 , inn_h_2 , inn_h_3 , inn_h_4 , inn_h_5 , inn_h_6 , inn_h_7 , inn_h_8 , inn_h_9 ,inn_h_e ,\
+												inn_a_1 , inn_a_2 , inn_a_3 , inn_a_4 , inn_a_5 , inn_a_6 , inn_a_7 , inn_a_8 , inn_a_9 ,inn_a_e ,\
+												pow_h , pow_a , vot_sco_h , vot_sco_a , v_ou_h  ,v_ou_a ,\
+												run_sco_h , run_all_h , team_era_h , run_sco_rd_h , run_all_rd_h , str_era_h , off_hit_h , hit_all_h , bul_inn_h , off_wal_h , def_wal_h , \
+												run_sco_a , run_all_a , team_era_a , run_sco_rd_a , run_all_rd_a , str_era_a , off_ait_a , hit_all_a , bul_inn_a , off_wal_a , def_wal_a )\
+												VALUES(?,?,?,?,?,?,?,?,?,? , ?,?,?,?,?,?,?,?,?,? , ?,?,?,?,?,?,?,?,?,? , ?,?,?,?,?,?,?,?,?,? , ?,?,?,?,?,?,?,?,?,? , ?,?,?,?,?,?,?,?,?,? ,?,?,?,?,?,?,?,?,?)""",(insert_game,))
 						conn.commit()
 						conn.close()
-					# print(fin_line)
+						# print(fin_line)
 				fin.close()
 		"""
 		conn = sql.connect(db_file)
@@ -524,14 +570,18 @@ class Bank:
 		odds_h = 0.0
 		odds_a = 0.0
 		over_under = map(float,fin_line[sharp+1:parlen_l].split())
-		if mode != "half":
+		if mode == "half":
 			score_ou,odds_o,odds_u = over_under
+		elif mode =="v2":
+			odds_h_half,odds_a_half,score_ou,score_ou_half,odds_o,odds_u,odds_o_half,odds_u_half = over_under
 		else:
 			odds_h_opt,odds_a_opt,score_ou,odds_o,odds_u = over_under
 		score_h_full = []
 		score_a_full = []
-		innings = fin_line.count(":")-2
+		innings = fin_line.count(":") - 2
 		inning_s = parlen_l
+		score_h_extra = 0
+		score_a_extra = 0
 		for inning_i in range(0,innings):
 			comma = fin_line[inning_s:].find(",")
 			dott = fin_line[inning_s:].find(":")
@@ -540,19 +590,45 @@ class Bank:
 			score_h_1 = fin_line[dott-1:dott]
 			score_a_2 = fin_line[dott+1:dott+3]
 			score_a_1 = fin_line[dott+1:dott+2]
-			if score_h_2.isdigit():
-				score_h_full.append(int(score_h_2))
-			else:
-				if score_h_1 == "X":
-					score_h_full.append(0)
+			if inning_i > 8 :
+				if score_h_2.isdigit():
+					score_h_extra += int(score_h_2)
 				else:
-					score_h_full.append(int(score_h_1))
-			if score_a_2.isdigit():
-				score_a_full.append(int(score_a_2))
+					if score_h_1 == "X":
+						pass
+					else:
+						score_h_extra += int(score_h_1)
+
+				if score_a_2.isdigit():
+					score_a_extra += int(score_a_2)
+				else:
+					if score_a_1 == "X":
+						pass
+					else:
+						score_a_extra += int(score_a_1)
+
 			else:
-				score_a_full.append(int(score_a_1))
+				if score_h_2.isdigit():
+					score_h_full.append(int(score_h_2))
+				else:
+					if score_h_1 == "X":
+						score_h_full.append(0)
+					else:
+						score_h_full.append(int(score_h_1))
+				if score_a_2.isdigit():
+					score_a_full.append(int(score_a_2))
+				else:
+					if score_a_1 == "X":
+						score_a_full.append(0)
+					else:
+						score_a_full.append(int(score_a_1))
 			inning_s += comma+1
-		if fin_line.count(".") > 6 and sharp != -1 or (fin_line.count(".") > 1 and sharp == -1):
+		for inning_i in range(0,9-innings):
+			score_h_full.append(0)
+			score_a_full.append(0)
+		score_h_full.append(score_h_extra)
+		score_a_full.append(score_a_extra)
+		if fin_line[endcolon:sharp].count(".") > len(over_under) and sharp != -1 or (fin_line.count(".") > 1 and sharp == -1):
 			odds_h = float(fin_line[enddot - 7:enddot - 2])
 			odds_a = float(fin_line[enddot - 2:enddot + 3])
 		elif fin_line.count("+") + fin_line.count("-") > 1:
@@ -582,10 +658,13 @@ class Bank:
 					odds_a_denom = odds_a_t
 				if odds_a_tt.isdigit() == 1:
 					odds_a_nom = odds_a_tt
-			odds_h = 1.0 + int(odds_h_denom) * 1.0 / int(odds_h_nom)
-			odds_a = 1.0 + int(odds_a_denom) * 1.0 / int(odds_a_nom)
-		if mode != "half":
+
+			odds_h = 1.0 + int(odds_h_denom) * 1.0 / int(odds_h_nom) if abs(float(odds_h_nom)) > 0.01 else 1.9
+			odds_a = 1.0 + int(odds_a_denom) * 1.0 / int(odds_a_nom) if abs(float(odds_a_nom)) > 0.01 else 1.9
+		if mode == "half":
 			return [cur_time,int(score_h),int(score_a),odds_h,odds_a,score_ou,odds_o,odds_u,score_h_full,score_a_full]
+		elif mode =="v2":
+			return [cur_time,int(score_h),int(score_a),odds_h,odds_a,odds_h_half,odds_a_half,score_ou,score_ou_half,odds_o,odds_u,odds_o_half,odds_u_half,score_h_full,score_a_full]
 		else:
 			return [cur_time,int(score_h),int(score_a),odds_h_opt,odds_a_opt,score_ou,odds_o,odds_u,score_h_full,score_a_full]
 		pass
@@ -602,6 +681,8 @@ class Bank:
 			return_list.append(0.0)
 		if str(team_h_shark) == "-1" or str(team_a_shark) == "-1":
 			return return_list
+		url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
+		print url
 		try:
 			fout = open(fout_txt,"r")
 		except IOError:
@@ -647,7 +728,6 @@ class Bank:
 					ii+=1
 				return_list[6:17] = home_f[0:11]
 				return_list[17:28] = away_f[0:11]
-				print return_list
 				if len(return_list) != 28:
 					if day == 1:
 						return_list =[]
@@ -889,16 +969,19 @@ class Bank:
 numpy.set_printoptions(precision=2,suppress=True)
 #"""
 db_file = "mlb.txt"
-myBank = Bank("half",db_file)
+#myBank = Bank("half",db_file)
+myBank = Bank("v2",db_file)
 #myBank.create_database("all")
+#myBank.create_database("v2")
 yes_total = 0.0
 no_total = 0.0
 #myBank.print_db()
 #11 worst
+"""
 for ii in range(1,30):
 	yes,no = myBank.predict_day(ii,"May",2014,"su")
 	yes_total += yes
 	no_total += no
 	print yes,no
 print yes_total,no_total,yes_total/(yes_total+no_total)
-#"""
+"""
