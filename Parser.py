@@ -13,10 +13,11 @@ def parser_today_games():
 	print(command)
 	ii = date.today()
 	outputpdf = "./"+str_league+str_year+"/"+str(ii)+".pdf"
-	cacheoption = "--cache-dir ./cache_"+str_league
+	#cacheoption = "--cache-dir ./cache_"+str_league
 	inputurl = "http://www.oddsportal.com/baseball/usa/mlb"
 	#inputurl = "http://www.oddsportal.com/baseball/usa/mlb"+str(str_year)+"/results/#/page/"+str(ii)
-	command = "wkhtmltopdf "+cacheoption+" "+inputurl+" "+outputpdf
+	command = "wkhtmltopdf "+inputurl+" "+outputpdf
+	#command = "wkhtmltopdf "+cacheoption+" "+inputurl+" "+outputpdf
 	os.system(command)
 	print command
 	f = open(outputpdf, 'rb')
@@ -44,8 +45,8 @@ def parser_today_games():
 	outputtxt = "./"+str_league+str_year+"/"+str(ii)+".txt"
 	outputtxt_final = "./"+str_league+str_year+"/final"+str(ii)+".txt"
 	for game_url in game_urls:
-		fout = open(outputtxt, 'a')
-		command = "wkhtmltopdf --cache-dir ./cache " + game_url + " temp.pdf"
+		fout = open(outputtxt, 'w')
+		command = "wkhtmltopdf " + game_url + " temp.pdf"
 		os.system(command)
 		command = "pdftotext -raw temp.pdf temp.txt"
 		os.system(command)
@@ -634,7 +635,7 @@ def Parser(itr,db_file_itr):
 	except:
 		cacheoption = "--cache-dir ./cache_"+str_league
 		inputurl = "http://www.oddsportal.com/baseball/usa/"+str(str_year)+"/results/#/page/"+str(ii)
-		command = "wkhtmltopdf "+cacheoption+" "+inputurl+" "+outputpdf
+		command = "wkhtmltopdf "+inputurl+" "+outputpdf
 		os.system(command)
 		print command
 		f = open(outputpdf, 'rb')
@@ -683,13 +684,13 @@ def Parser(itr,db_file_itr):
 		odds_h_half = 1.9
 		odds_a_half = 1.9
 		if mode == "half":
-			command = "wkhtmltopdf --cache-dir ./cache " + game_url + "#over-under;3 temp_ou.pdf"
+			command = "wkhtmltopdf " + game_url + "#over-under;3 temp_ou.pdf"
 			os.system(command)
 			print command
 			command = "pdftotext -raw temp_ou_half.pdf temp_ou_half.txt"
 			[team,score_h,score_a,ou_full,over_full,under_full,score_full] = txt_parser_ou_half("temp_ou_full.txt")
 			os.system(command)
-			command = "wkhtmltopdf --cache-dir ./cache " + game_url + "#ah;3 temp_ah.pdf"
+			command = "wkhtmltopdf " + game_url + "#ah;3 temp_ah.pdf"
 			print command
 			os.system(command)
 			command = "pdftotext -raw temp_ah_half.pdf temp_ah_half.txt"
@@ -708,7 +709,7 @@ def Parser(itr,db_file_itr):
 				outputtxt_temp = "./"+str_league+str_year+"/"+str(game_url_mod)+"_ou_full.txt"
 				fin = open(outputtxt_temp,'r')
 			except:
-				command = "wkhtmltopdf --cache-dir ./cache " + game_url + "#over-under;1 temp_ou_full.pdf"
+				command = "wkhtmltopdf " + game_url + "#over-under;1 temp_ou_full.pdf"
 				os.system(command)
 				command = "pdftotext -raw temp_ou_full.pdf "+outputtxt_temp
 				os.system(command)
@@ -717,7 +718,7 @@ def Parser(itr,db_file_itr):
 				outputtxt_temp = "./"+str_league+str_year+"/"+str(game_url_mod)+"_ou_half.txt"
 				fin = open(outputtxt_temp,'r')
 			except:
-				command = "wkhtmltopdf --cache-dir ./cache " + game_url + "#over-under;3 temp_ou_half.pdf"
+				command = "wkhtmltopdf " + game_url + "#over-under;3 temp_ou_half.pdf"
 				os.system(command)
 				print command
 				command = "pdftotext -raw temp_ou_half.pdf "+outputtxt_temp
@@ -727,14 +728,14 @@ def Parser(itr,db_file_itr):
 				outputtxt_temp = "./"+str_league+str_year+"/"+str(game_url_mod)+"_ah_half.txt"
 				fin = open(outputtxt_temp,'r')
 			except:
-				command = "wkhtmltopdf --cache-dir ./cache " + game_url + "#ah;3 temp_ah_half.pdf"
+				command = "wkhtmltopdf " + game_url + "#ah;3 temp_ah_half.pdf"
 				print command
 				os.system(command)
 				command = "pdftotext -raw temp_ah_half.pdf "+outputtxt_temp
 				os.system(command)
 			[odds_h_half,odds_a_half] = txt_parser_ah_half(outputtxt_temp)
 		else :
-			command = "wkhtmltopdf --cache-dir ./cache " + game_url + "#over-under;1 temp_ou.pdf"
+			command = "wkhtmltopdf " + game_url + "#over-under;1 temp_ou.pdf"
 			os.system(command)
 			command = "pdftotext -raw temp_ou.pdf temp_ou.txt"
 			os.system(command)
