@@ -634,7 +634,7 @@ def Parser(itr,db_file_itr):
 		f = open(outputpdf, 'rb')
 	except:
 		cacheoption = "--cache-dir ./cache_"+str_league
-		inputurl = "http://www.oddsportal.com/baseball/usa/"+str(str_year)+"/results/#/page/"+str(ii)
+		inputurl = "http://www.oddsportal.com/baseball/"+str(str_league)+"/"+str(str_year)+"/results/#/page/"+str(ii)
 		command = "wkhtmltopdf "+inputurl+" "+outputpdf
 		os.system(command)
 		print command
@@ -785,6 +785,24 @@ def Parser(itr,db_file_itr):
 				score = str(score_h)+":"+str(score_a)
 				dash = str(team).find("-")
 				dash2 = fin_line.find("-")
+				endcolon = fin_line.rfind(":")
+				mod_endcolon = 0
+				if fin_line[endcolon-2] == " ":
+					mod_endcolon = endcolon-2
+				else:
+					mod_endcolon = endcolon-3
+				mod_team = fin_line[fin_line.find(" ")+1:mod_endcolon]
+				new_team = ""
+				for ii in range(0,len(mod_team)):
+					if mod_team[0] == " " and ii == 0:
+						pass
+					elif mod_team[ii].isupper() and ii > 2 and mod_team[ii-1] != " " and mod_team[ii-1] != ".":
+						new_team += " "
+						new_team += mod_team[ii]
+					else:
+						new_team += mod_team[ii]
+				new_fin_line = fin_line[0:fin_line.find(" ")+1]+new_team+fin_line[mod_endcolon:]
+				fin_line = new_fin_line
 				if len(fin_line) < 12 or fin_line.find("-") == -1:
 					continue
 				elif (fin_line[6:9] == team[0:3] and fin_line[dash2+2:dash2+5] == team[dash+2:dash+5])\

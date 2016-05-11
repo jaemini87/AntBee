@@ -211,11 +211,802 @@ class Bee:
 		conn = sql.connect(self.Db_File)
 		cur = conn.cursor()
 		cur.execute("select * from MLB_V1")
-
-
-
 		pass
+	def stats_handi(self):
+		conn = sql.connect(self.Db_File)
+		cur = conn.cursor()
+		cur.execute("select * from MLB_V2")
+	#insert_game = [season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_half,score_a_half,score_ou,score_ou_half,odds_h,odds_a,odds_h_half,odds_a_half,odds_o,odds_u,odds_o_half,odds_u_half]
+		#30% under
+		#45% under
+		#45~50%
+		#50~55%
+		#55% over
+		#70% over
+		games = [[0 for ii in range(0,5)] for jj in range(0,12)]
+		ev = [[0 for ii in range(0,5)] for jj in range(0,12)]
 
+		for fetch in cur.fetchall():
+			win_ratio_h = fetch[15]/(fetch[14]+fetch[15])
+			win_ratio_a = fetch[14]/(fetch[14]+fetch[15])
+			score_diff = fetch[8]-fetch[9]
+			odds_h = fetch[14]
+			odds_a = fetch[15]
+			if win_ratio_h < 0.35:
+				i = 0
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			elif win_ratio_h < 0.45:
+				i = 1
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			elif win_ratio_h < 0.5:
+				i = 2
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			elif win_ratio_h < 0.55:
+				i = 3
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			elif win_ratio_h < 0.65:
+				i = 4
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			else:
+				i = 5
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			win_ratio_h = fetch[14]/(fetch[14]+fetch[15])
+			odds_h = fetch[15]
+			score_diff = fetch[9]-fetch[8]
+			if win_ratio_h < 0.35:
+				i = 6
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			elif win_ratio_h < 0.45:
+				i = 7
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			elif win_ratio_h < 0.5:
+				i = 8
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			elif win_ratio_h < 0.55:
+				i = 9
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			elif win_ratio_h < 0.65:
+				i = 10
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+			else:
+				i = 11
+				if score_diff > 2.5:
+					games[i][0] += 1
+					ev[i][0] += odds_h*1.75-1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 1.5:
+					games[i][1] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] += odds_h*1.4-1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > 0:
+					games[i][2] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] += odds_h-1.0
+					ev[i][3] += odds_h/1.4-1.0
+				elif score_diff > -1.5:
+					games[i][3] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] += odds_h/1.4-1.0
+				else:
+					games[i][4] += 1
+					ev[i][0] -= 1.0
+					ev[i][1] -= 1.0
+					ev[i][2] -= 1.0
+					ev[i][3] -= 1.0
+		np.set_printoptions(precision=2,suppress=True)
+		iter = 0
+		print "-----------------HOME-GAMES------------------"
+		for kk in games:
+			if iter == 6:
+				print "-----------------AWAY-GAMES------------------"
+			print kk
+			iter += 1
+		iter = 0
+		print "-----------------HOME-EV-------------------"
+		for kk in np.array(ev):
+			if iter == 6:
+				print "-----------------AWAY-EV-------------------"
+			print kk
+			iter += 1
+		print "------------PROB-HOME-GAMES------------------"
+		iter = 0
+		for kk in games:
+			if iter == 6:
+				print "------------PROB-AWAY-EV-------------------"
+			print np.array([float(kk[0])/sum(kk[0:3]),float(kk[0]+kk[1])/sum(kk[0:3]),float(sum(kk[0:4]))/sum(kk[0:5])])
+			iter += 1
+	pass
+
+	def stats_ou(self):
+		conn = sql.connect(self.Db_File)
+		cur = conn.cursor()
+		cur.execute("select * from MLB_V2")
+		#insert_game = [season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_half,score_a_half,score_ou,score_ou_half,odds_h,odds_a,odds_h_half,odds_a_half,odds_o,odds_u,odds_o_half,odds_u_half]
+		#odds_h 14
+		#odds_a 15
+		#score_h 8
+		#score_a 9
+		games = [0 for ii in range(0,10)]
+		games_n = [0 for ii in range(0,10)]
+		games_m = [0 for ii in range(0,10)]
+		ev = [0.0 for ii in range(0,10)]
+		ev_n = [0.0 for ii in range(0,10)]
+		ev_m = [0.0 for ii in range(0,10)]
+		prob = [0.0 for ii in range(0,8)]
+		prob_m = [0.0 for ii in range(0,8)]
+		prob_n = [0.0 for ii in range(0,8)]
+		night = 0
+		morning = 0
+
+		for fetch in cur.fetchall():
+			if fetch[5] > 22 or fetch[5] < 7:
+				ou = fetch[8]+fetch[9]
+				ou_half = fetch[10]+fetch[11]
+				score_ou = fetch[12]
+				score_ou_half = fetch[13]
+				if ou > score_ou+0.1 and ou_half > score_ou_half+0.1:
+					games_n[0]+=1
+					ev_n[0] += fetch[18]-1.0
+					ev_n[1] += fetch[20]-1.0
+					ev_n[2] -= 1.0
+					ev_n[3] -= 1.0
+					pass
+				elif ou > score_ou+0.1 and abs(ou_half-score_ou_half) < 0.1:
+					ev_n[0] += fetch[18]-1.0
+					ev_n[1] += 0.0
+					ev_n[2] -= 1.0
+					ev_n[3] -= 0.0
+					games_n[1]+=1
+					pass
+				elif ou > score_ou+0.1 and ou_half < score_ou_half-0.1:
+					ev_n[0] += fetch[18]-1.0
+					ev_n[1] -= 1.0
+					ev_n[2] -= 1.0
+					ev_n[3] += fetch[21]-1.0
+					games_n[2]+=1
+					pass
+				elif abs(ou -score_ou)<0.1 and ou_half > score_ou_half+0.1:
+					ev_n[0] += 0.0
+					ev_n[1] += fetch[20]-1.0
+					ev_n[2] -= 0.0
+					ev_n[3] -= 1.0
+					games_n[3]+=1
+					pass
+				elif abs(ou -score_ou)<0.1 and abs(ou_half-score_ou_half) < 0.1:
+					ev_n[0] += 0.0
+					ev_n[1] += 0.0
+					ev_n[2] -= 0.0
+					ev_n[3] -= 0.0
+					games_n[4]+=1
+					pass
+				elif abs(ou -score_ou)<0.1 and ou_half < score_ou_half-0.1:
+					ev_n[0] += 0.0
+					ev_n[1] += -1.0
+					ev_n[2] -= 0.0
+					ev_n[3] += fetch[21]-1.0
+					games_n[5]+=1
+					pass
+				elif ou < score_ou-0.1 and ou_half > score_ou_half+0.1:
+					ev_n[0] += -1.0
+					ev_n[1] += fetch[20]-1.0
+					ev_n[2] += fetch[19]-1.0
+					ev_n[3] -= 1.0
+					games_n[6]+=1
+					pass
+				elif ou < score_ou-0.1 and abs(ou_half-score_ou_half) < 0.1:
+					ev_n[0] += -1.0
+					ev_n[1] += 0.0
+					ev_n[2] += fetch[19]-1.0
+					ev_n[3] -= 0.0
+					games_n[7]+=1
+					pass
+				elif ou < score_ou-0.1 and ou_half < score_ou_half-0.1:
+					ev_n[0] += -1.0
+					ev_n[1] += -1.0
+					ev_n[2] += fetch[19]-1.0
+					ev_n[3] += fetch[21]-1.0
+					games_n[8]+=1
+					pass
+				else:
+					ev_n[0] += fetch[18]-1.0
+					ev_n[1] += fetch[20]-1.0
+					ev_n[2] -= 1.0
+					ev_n[3] -= 1.0
+					games_n[9]+=1
+					pass
+			else:
+				ou = fetch[8]+fetch[9]
+				ou_half = fetch[10]+fetch[11]
+				score_ou = fetch[12]
+				score_ou_half = fetch[13]
+				if ou > score_ou+0.1 and ou_half > score_ou_half+0.1:
+					games_m[0]+=1
+					ev_m[0] += fetch[18]-1.0
+					ev_m[1] += fetch[20]-1.0
+					ev_m[2] -= 1.0
+					ev_m[3] -= 1.0
+					pass
+				elif ou > score_ou+0.1 and abs(ou_half-score_ou_half) < 0.1:
+					ev_m[0] += fetch[18]-1.0
+					ev_m[1] += 0.0
+					ev_m[2] -= 1.0
+					ev_m[3] -= 0.0
+					games_m[1]+=1
+					pass
+				elif ou > score_ou+0.1 and ou_half < score_ou_half-0.1:
+					ev_m[0] += fetch[18]-1.0
+					ev_m[1] -= 1.0
+					ev_m[2] -= 1.0
+					ev_m[3] += fetch[21]-1.0
+					games_m[2]+=1
+					pass
+				elif abs(ou -score_ou)<0.1 and ou_half > score_ou_half+0.1:
+					ev_m[0] += 0.0
+					ev_m[1] += fetch[20]-1.0
+					ev_m[2] -= 0.0
+					ev_m[3] -= 1.0
+					games_m[3]+=1
+					pass
+				elif abs(ou -score_ou)<0.1 and abs(ou_half-score_ou_half) < 0.1:
+					ev_m[0] += 0.0
+					ev_m[1] += 0.0
+					ev_m[2] -= 0.0
+					ev_m[3] -= 0.0
+					games_m[4]+=1
+					pass
+				elif abs(ou -score_ou)<0.1 and ou_half < score_ou_half-0.1:
+					ev_m[0] += 0.0
+					ev_m[1] += -1.0
+					ev_m[2] -= 0.0
+					ev_m[3] += fetch[21]-1.0
+					games_m[5]+=1
+					pass
+				elif ou < score_ou-0.1 and ou_half > score_ou_half+0.1:
+					ev_m[0] += -1.0
+					ev_m[1] += fetch[20]-1.0
+					ev_m[2] += fetch[19]-1.0
+					ev_m[3] -= 1.0
+					games_m[6]+=1
+					pass
+				elif ou < score_ou-0.1 and abs(ou_half-score_ou_half) < 0.1:
+					ev_m[0] += -1.0
+					ev_m[1] += 0.0
+					ev_m[2] += fetch[19]-1.0
+					ev_m[3] -= 0.0
+					games_m[7]+=1
+					pass
+				elif ou < score_ou-0.1 and ou_half < score_ou_half-0.1:
+					ev_m[0] += -1.0
+					ev_m[1] += -1.0
+					ev_m[2] += fetch[19]-1.0
+					ev_m[3] += fetch[21]-1.0
+					games_m[8]+=1
+					pass
+				else:
+					ev_m[0] += fetch[18]-1.0
+					ev_m[1] += fetch[20]-1.0
+					ev_m[2] -= 1.0
+					ev_m[3] -= 1.0
+					games_m[9]+=1
+					pass
+			ou = fetch[8]+fetch[9]
+			ou_half = fetch[10]+fetch[11]
+			score_ou = fetch[12]
+			score_ou_half = fetch[13]
+			if ou > score_ou+0.1 and ou_half > score_ou_half+0.1:
+				games[0]+=1
+				ev[0] += fetch[18]-1.0
+				ev[1] += fetch[20]-1.0
+				ev[2] -= 1.0
+				ev[3] -= 1.0
+				pass
+			elif ou > score_ou+0.1 and abs(ou_half-score_ou_half) < 0.1:
+				ev[0] += fetch[18]-1.0
+				ev[1] += 0.0
+				ev[2] -= 1.0
+				ev[3] -= 0.0
+				games[1]+=1
+				pass
+			elif ou > score_ou+0.1 and ou_half < score_ou_half-0.1:
+				ev[0] += fetch[18]-1.0
+				ev[1] -= 1.0
+				ev[2] -= 1.0
+				ev[3] += fetch[21]-1.0
+				games[2]+=1
+				pass
+			elif abs(ou -score_ou)<0.1 and ou_half > score_ou_half+0.1:
+				ev[0] += 0.0
+				ev[1] += fetch[20]-1.0
+				ev[2] -= 0.0
+				ev[3] -= 1.0
+				games[3]+=1
+				pass
+			elif abs(ou -score_ou)<0.1 and abs(ou_half-score_ou_half) < 0.1:
+				ev[0] += 0.0
+				ev[1] += 0.0
+				ev[2] -= 0.0
+				ev[3] -= 0.0
+				games[4]+=1
+				pass
+			elif abs(ou -score_ou)<0.1 and ou_half < score_ou_half-0.1:
+				ev[0] += 0.0
+				ev[1] += -1.0
+				ev[2] -= 0.0
+				ev[3] += fetch[21]-1.0
+				games[5]+=1
+				pass
+			elif ou < score_ou-0.1 and ou_half > score_ou_half+0.1:
+				ev[0] += -1.0
+				ev[1] += fetch[20]-1.0
+				ev[2] += fetch[19]-1.0
+				ev[3] -= 1.0
+				games[6]+=1
+				pass
+			elif ou < score_ou-0.1 and abs(ou_half-score_ou_half) < 0.1:
+				ev[0] += -1.0
+				ev[1] += 0.0
+				ev[2] += fetch[19]-1.0
+				ev[3] -= 0.0
+				games[7]+=1
+				pass
+			elif ou < score_ou-0.1 and ou_half < score_ou_half-0.1:
+				ev[0] += -1.0
+				ev[1] += -1.0
+				ev[2] += fetch[19]-1.0
+				ev[3] += fetch[21]-1.0
+				games[8]+=1
+				pass
+			else:
+				ev[0] += fetch[18]-1.0
+				ev[1] += fetch[20]-1.0
+				ev[2] -= 1.0
+				ev[3] -= 1.0
+				games[9]+=1
+				pass
+
+		over = sum(games_n[0:6])
+		over_h = games_n[0]+games_n[1]+games_n[3]+games_n[4]+games_n[6]+games_n[7]
+		under = sum(games_n[3:10])
+		under_h = games_n[2]+games_n[1]+games_n[5]+games_n[4]+games_n[7]+games_n[8]
+		prob_n[0] = float(games_n[0]+games_n[1]+games_n[3]+games_n[4])/over
+		prob_n[1] = float(games_n[0]+games_n[1]+games_n[3]+games_n[4])/over_h
+		prob_n[2] = float(games_n[7]+games_n[8]+games_n[5]+games_n[4])/under
+		prob_n[3] = float(games_n[7]+games_n[8]+games_n[5]+games_n[4])/under_h
+
+		prob_n[4] = float(games_n[2]+games_n[1]+games_n[5]+games_n[4])/over # fulltime is over but half inn is under bullpen bad
+		prob_n[5] = float(games_n[7]+games_n[6]+games_n[3]+games_n[4])/over_h # halftime is over but full inn under bullpen good
+
+		prob_n[6] = float(games_n[7]+games_n[6]+games_n[3]+games_n[4])/under # fulltime is under but halftime over bullpen good
+		prob_n[7] = float(games_n[2]+games_n[1]+games_n[5]+games_n[4])/under_h # halftime is under but fulltime over bullpen bad
+
+		over = sum(games_m[0:6])
+		over_h = games_m[0]+games_m[1]+games_m[3]+games_m[4]+games_m[6]+games_m[7]
+		under = sum(games_m[3:10])
+		under_h = games_m[2]+games_m[1]+games_m[5]+games_m[4]+games_m[7]+games_m[8]
+		prob_m[0] = float(games_m[0]+games_m[1]+games_m[3]+games_m[4])/over
+		prob_m[1] = float(games_m[0]+games_m[1]+games_m[3]+games_m[4])/over_h
+		prob_m[2] = float(games_m[7]+games_m[8]+games_m[5]+games_m[4])/under
+		prob_m[3] = float(games_m[7]+games_m[8]+games_m[5]+games_m[4])/under_h
+
+		prob_m[4] = float(games_m[2]+games_m[1]+games_m[5]+games_m[4])/over # fulltime is over but half inn is under bullpen bad
+		prob_m[5] = float(games_m[7]+games_m[6]+games_m[3]+games_m[4])/over_h # halftime is over but full inn under bullpen good
+
+		prob_m[6] = float(games_m[7]+games_m[6]+games_m[3]+games_m[4])/under # fulltime is under but halftime over bullpen good
+		prob_m[7] = float(games_m[2]+games_m[1]+games_m[5]+games_m[4])/under_h # halftime is under but fulltime over bullpen bad
+
+		over = sum(games[0:6])
+		over_h = games[0]+games[1]+games[3]+games[4]+games[6]+games[7]
+		under = sum(games[3:10])
+		under_h = games[2]+games[1]+games[5]+games[4]+games[7]+games[8]
+		prob[0] = float(games[0]+games[1]+games[3]+games[4])/over
+		prob[1] = float(games[0]+games[1]+games[3]+games[4])/over_h
+		prob[2] = float(games[7]+games[8]+games[5]+games[4])/under
+		prob[3] = float(games[7]+games[8]+games[5]+games[4])/under_h
+
+		prob[4] = float(games[2]+games[1]+games[5]+games[4])/over # fulltime is over but half inn is under bullpen bad
+		prob[5] = float(games[7]+games[6]+games[3]+games[4])/over_h # halftime is over but full inn under bullpen good
+
+		prob[6] = float(games[7]+games[6]+games[3]+games[4])/under # fulltime is under but halftime over bullpen good
+		prob[7] = float(games[2]+games[1]+games[5]+games[4])/under_h # halftime is under but fulltime over bullpen bad
+		#It is more likely happen pro
+		print "-------------------------------------START-------------------------------"
+		print games
+		print games_n
+		print games_m
+		print "-------------------------------------------------------------------------"
+		print prob
+		print prob_n
+		print prob_m
+		print "-------------------------------------------------------------------------"
+		print ev
+		print ev_n
+		print ev_m
+		print "------------------------------------END----------------------------------"
+		pass
+	def stats(self):
+		conn = sql.connect(self.Db_File)
+		cur = conn.cursor()
+		cur.execute("select * from MLB_V2")
+		h_odds_avg = 0.0
+		a_odds_avg = 0.0
+		h_games_su = 0
+		h_games_utd = 0
+		a_games_su = 0
+		a_games_utd = 0
+
+		h_ev = 0.0
+		a_ev = 0.0
+		h_ev_su = 0.0
+		h_ev_utd = 0.0
+		a_ev_su = 0.0
+		a_ev_utd = 0.0
+
+		h_ev_interval = []
+		a_ev_interval = []
+
+		#insert_game = [season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_half,score_a_half,score_ou,score_ou_half,odds_h,odds_a,odds_h_half,odds_a_half,odds_o,odds_u,odds_o_half,odds_u_half]
+		#odds_h 14
+		#odds_a 15
+		#score_h 8
+		#score_a 9
+		for fetch in cur.fetchall():
+			h_odds_avg += fetch[14]
+			a_odds_avg += fetch[15]
+			if fetch[14] < fetch[15]:
+				h_games_su += 1
+				if fetch[8] > fetch[9]:
+					h_ev += fetch[14]-1.0
+					h_ev_su += fetch[14]-1.0
+					a_ev_utd -= 1.0
+					a_ev -= 1.0
+
+				else:
+					h_ev -= 1.0
+					h_ev_su -= 1.0
+					a_ev_utd += fetch[15]-1.0
+					a_ev += fetch[15]-1.0
+			else:
+				h_games_utd += 1
+				if fetch[8] < fetch[9]:
+					a_ev += fetch[15]-1.0
+					a_ev_su += fetch[15]-1.0
+					h_ev_utd -= 1.0
+					h_ev -= 1.0
+				else:
+					a_ev -= 1.0
+					a_ev_su -= 1.0
+					h_ev_utd += fetch[14]-1.0
+					h_ev += fetch[14]-1.0
+		h_odds_avg /= h_games_su+h_games_utd
+		a_odds_avg /= h_games_su+h_games_utd
+		print h_odds_avg,a_odds_avg,h_games_su,h_games_utd,h_ev,h_ev_su,h_ev_utd,a_ev,a_ev_su,a_ev_utd
+		pass
 	def analysis(self):
 		conn = sql.connect(self.Db_File)
 		cur = []
@@ -396,7 +1187,13 @@ class Bee:
 
 
 
-myBee = Bee("V1_usa_mlb-2014.db")
-myBee.analysis_run_over()
+myBee = Bee("V2_usa_mlb-2015.db")
+#myBee.analysis_run_over()
+myBee.stats_handi()
+myBee = Bee("V2_usa_mlb-2014.db")
+myBee.stats_handi()
+myBee = Bee("V2_usa_mlb-2013.db")
+myBee.stats_handi()
+
 #myBee.generate_stability([100,3])
 #myBee.analysis_votes()
