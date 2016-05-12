@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 import matplotlib.path as path
 #from scipy.stats.stats import pearsonr
+import random
 class Bee:
 	Name = ""
 	Budjet = 100.0
@@ -27,7 +28,7 @@ class Bee:
 				if EV[0] > 0.1-i*0.1 and EV[2] > 0.1-j*0.1:
 					result_EV[(ii*4)+jj]+=1
 					return result_EV
-	pass
+		pass
 	def generate_stability_(self,param):
 		"""
 			  odds < 1.6 - 2.5
@@ -73,7 +74,7 @@ class Bee:
 		#Stability = sum((score_list_diff-score_diff)*score_list_factor)
 		#Stability = sum((score_list_diff+np.array(odds_factor)*score_list_factor)*score_list_factor)
 		return Stability_list
-	pass
+		pass
 	def get_score_list_factor(self,score_list_offset):
 		#return [0.00,0.6,0.4,0.0,0.0]
 		if score_list_offset[0] == 0 and score_list_offset[3] == 0 and score_list_offset[4] == 0:
@@ -203,7 +204,114 @@ class Bee:
 #		print hist_away.fetchall()
 		pass
 
-
+	def bet_prob(self):
+		#retrurn +ev list (fulltime,halftime,full ou,half ou)
+		#insert_game = [season,day,month,year,time,team_h,team_a,
+		#8:  score_h,score_a,
+		#10: score_h_half,score_a_half,
+		#12: score_ou,score_ou_half,
+		#14: odds_h,odds_a,
+		#16: odds_h_half,odds_a_half,
+		#18: odds_o,odds_u,
+		#20: odds_o_half,odds_u_half]
+		conn = sql.connect(self.Db_File)
+		cur = conn.cursor()
+		cur.execute("select * from MLB_V2")
+		cum_bet_slip = [0.0 for _ in range(0,4)]
+		num_bet_slip = [0.0 for _ in range(0,4)]
+		for fin_line in cur.fetchall():
+			full_score_ratio = fin_line[15]/(fin_line[14]+fin_line[15])
+			full_ou_ratio = fin_line[19]/(fin_line[18]+fin_line[19])
+			half_score_ratio = fin_line[17]/(fin_line[17]+fin_line[16])
+			half_ou_ratio = fin_line[21]/(fin_line[21]+fin_line[20])
+			full_score_win = 1 if fin_line[8]>fin_line[9] else -1
+			full_ou_win= 1 if fin_line[8]+fin_line[9]>fin_line[12] else (0 if fin_line[8]+fin_line[9]-fin_line[12]<0.1 else -1)
+			half_score_win = 1 if fin_line[10]>fin_line[11] else -1
+			half_ou_win = 1 if fin_line[11]+fin_line[10]>fin_line[13] else (0 if fin_line[10]+fin_line[11]-fin_line[13]<0.1 else -1)
+			bet_slip = []
+			rand_list = [[] for ii in range(0,4)]
+			for rand in range(0,10):
+				if random.random() < full_score_ratio:
+					rand_list[0].append(1)
+				else:
+					rand_list[0].append(0)
+				if random.random() < full_ou_ratio:
+					rand_list[1].append(1)
+				else:
+					rand_list[1].append(0)
+				if random.random() < half_score_ratio:
+					rand_list[2].append(1)
+				else:
+					rand_list[2].append(0)
+				if random.random() < half_ou_ratio:
+					rand_list[3].append(1)
+				else:
+					rand_list[3].append(0)
+			if sum(rand_list[0])>5 :
+				if 	full_score_win == 1:
+					bet_slip.append(fin_line[14]-1.0)
+				else:
+					bet_slip.append(-1.0)
+			elif sum(rand_list[0])<5 :
+				if 	full_score_win == -1:
+					bet_slip.append(fin_line[15]-1.0)
+				else:
+					bet_slip.append(-1.0)
+			else:
+				bet_slip.append(0.0)
+			if sum(rand_list[1])>5 :
+				if 	full_ou_win == 1:
+					bet_slip.append(fin_line[18]-1.0)
+				elif full_ou_win == -1:
+					bet_slip.append(-1.0)
+				else:
+					bet_slip.append(0.0)
+			elif sum(rand_list[1])<5 :
+				if 	full_ou_win == -1:
+					bet_slip.append(fin_line[19]-1.0)
+				elif full_ou_win == 1:
+					bet_slip.append(-1.0)
+				else:
+					bet_slip.append(0.0)
+			else:
+				bet_slip.append(0.0)
+			if sum(rand_list[2])>5 :
+				if 	half_score_win == 1:
+					bet_slip.append(fin_line[16]-1.0)
+				elif half_score_win == -1:
+					bet_slip.append(-1.0)
+				else:
+					bet_slip.append(0.0)
+			elif sum(rand_list[2])<5 :
+				if 	half_score_win == -1:
+					bet_slip.append(fin_line[17]-1.0)
+				elif half_score_win == 1:
+					bet_slip.append(-1.0)
+				else:
+					bet_slip.append(0.0)
+			else:
+				bet_slip.append(0.0)
+			if sum(rand_list[3])>5 :
+				if 	half_ou_win == 1:
+					bet_slip.append(fin_line[20]-1.0)
+				elif half_ou_win == -1:
+					bet_slip.append(-1.0)
+				else:
+					bet_slip.append(0.0)
+			elif sum(rand_list[3])<5 :
+				if 	half_ou_win == -1:
+					bet_slip.append(fin_line[21]-1.0)
+				elif half_ou_win == 1:
+					bet_slip.append(-1.0)
+				else:
+					bet_slip.append(0.0)
+			else:
+				bet_slip.append(0.0)
+			cum_bet_slip += np.array(bet_slip)
+			num_bet_slip += np.array(bet_slip)/(np.array(bet_slip)-0.0000001)
+		print cum_bet_slip
+		print num_bet_slip
+		pass
 
 	def generate_stability_result(self,game_number,game_seeds):
 		#Game Seed Format
@@ -641,7 +749,7 @@ class Bee:
 				print "------------PROB-AWAY-EV-------------------"
 			print np.array([float(kk[0])/sum(kk[0:3]),float(kk[0]+kk[1])/sum(kk[0:3]),float(sum(kk[0:4]))/sum(kk[0:5])])
 			iter += 1
-	pass
+		pass
 
 	def stats_ou(self):
 		conn = sql.connect(self.Db_File)
@@ -1125,75 +1233,83 @@ class Bee:
 		cur = conn.cursor()
 		#cur.execute("select * from MLB_V1 where run_su=:t1 and ou=:t2",{"t1": 1, "t2": 1})
 		#cur.execute("select * from MLB_V1 where utd=:t1 and ou=:t2",{"t1": 1, "t2": -1})
-		cur.execute("select * from MLB_V1 where ou=:t2",{"t2": 1})
+		#insert_game = [season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_half,score_a_half,score_ou,score_ou_half,odds_h,odds_a,odds_h_half,odds_a_half,odds_o,odds_u,odds_o_half,odds_u_half]
+		cur.execute("select * from MLB_V2")
 		x= []
-		y= []
+		y= [[[] for jj in range(0,12)] for kk in range(0,11)]
 		ii = 9
-		#arg_num starts from 1-11
-
-		arg_num = 4
-		arg_amp = 10
+		#arg_num starts from 0-10
+#		arg_num = 0
+		min = 1000
+		max = -1000
+		avg = [0.0 for ii in range(0,11)]
+		std = [0.0 for ii in range(0,11)]
+		temp = [0.0 for ii in range(0,11)]
 		for fetch in cur.fetchall():
 			arg_list = fetch
-			#arg_list 15 16 odds_h odds_a
-			#arg_list 8 9 score_h score_a
-			home_su = arg_amp if (arg_list[15] < arg_list[16]) else -arg_amp
-			home_su = (arg_amp-arg_amp/arg_list[16]) if (arg_list[8] < arg_list[9]) else -arg_amp/arg_list[16]
-			#y.append(home_su*(arg_list[29+6+arg_num]/(0.000001+arg_list[29+6+11+arg_num])))
+			score_diff = arg_list[8]+arg_list[9]
+			score_half_diff = arg_list[10]+arg_list[11]-arg_list[13]
+#			win_h = arg_list[15]/(arg_list[14]+arg_list[15])
+			win_h = arg_list[20]/(arg_list[19]+arg_list[20])
+			for arg_num in range(0,11):
+				temp = (arg_list[48+arg_num]+arg_list[59+arg_num])/2
+				bucket=-1
+				if win_h < 0.05:
+					bucket=0
+				elif win_h < 0.05:
+					bucket=1
+				elif win_h < 0.5:
+					bucket=2
+				elif win_h < 0.95:
+					bucket=3
+				elif win_h < 0.65:
+					bucket=4
+				else:
+					bucket=5
+				if score_half_diff<0:
+					bucket+=6
+					y[arg_num][bucket].append(temp)
+				elif score_half_diff>0:
+					y[arg_num][bucket].append(temp)
 
-			#result = home_su*(arg_list[29+5+arg_num]/(arg_list[29+5+11+arg_num])) if abs(arg_list[34+arg_num])>0.01 and abs(arg_list[45+arg_num])>0.01 else 0.0
-			result = home_su*(arg_list[34+arg_num]-(arg_list[45+arg_num])) if abs(arg_list[34+arg_num])>0.01 and abs(arg_list[45+arg_num])>0.01 else 0.0
-			result = 1 if arg_list[15] < arg_list[16] and arg_list[8] > arg_list[9] else -1
-			print arg_list[34+arg_num],arg_list[44+arg_num],fetch
-			discrete = result
-			#discrete = 0 if abs(1-abs(result)) < 0.1 else (1 if result > 0 else -1)
-			y.append(result)
-			x.append(ii)
-			ii+=1
-#		x = np.random.randn(1000)
-#		y = np.random.randn(1000)
-		print "AVG",np.average(y),"MED",np.median(y)
-		print "SUM",np.sum(y),"Size", len(y)
-		fig, ax = plt.subplots()
-
-		# histogram our data with numpy
-		data = y
-		n, bins = np.histogram(data, 200)
-
-		# get the corners of the rectangles for the histogram
-		left = np.array(bins[:-1])
-		right = np.array(bins[1:])
-		bottom = np.zeros(len(left))
-		top = bottom + n
-
-		# we need a (numrects x numsides x 2) numpy array for the path helper
-		# function to build a compound path
-		XY = np.array([[left, left, right, right], [bottom, top, top, bottom]]).T
-
-		# get the Path object
-		barpath = path.Path.make_compound_path_from_polys(XY)
-
-		# make a patch out of it
-		patch = patches.PathPatch(
-			barpath, facecolor='blue', edgecolor='gray', alpha=0.8)
-		ax.add_patch(patch)
-
-		# update the view limits
-		ax.set_xlim(left[0], right[-1])
-		ax.set_ylim(bottom.min(), top.max())
-		k = []
+			if temp < min:
+				min = temp
+			if max < temp:
+				max = temp
+		np.set_printoptions(precision=2,suppress=True)
+		for ii in range(0,11):
+			for jj in range(0,6):
+				if jj == 2 or jj ==3:
+					#print np.average(np.array(y[ii][jj])),np.std(np.array(y[ii][jj])),len(y[ii][jj])
+					print np.average(np.array(y[ii][jj]))-np.average(np.array(y[ii][jj+6])),np.std(np.array(y[ii][jj]))-np.std(np.array(y[ii][jj+6])),len(y[ii][jj])
+				#print np.average(np.array(y[ii][jj])),np.std(np.array(y[ii][jj])),len(y[ii][jj])
+				#print "Avg",np.average(np.array(y[ii][jj])),"Std",np.std(np.array(y[ii][jj])),"Games",len(y[ii][jj])
+			#print "-------------------------------------"
+		"""
+		bins = np.linspace(min-1.0,max+1.0,50)
+		plt.hist(y[0],bins,alpha=0.5,label="win<35%")
+		plt.hist(y[1],bins,alpha=0.5,label="35%<win<45%",normed=True)
+		plt.hist(y[2],bins,alpha=0.5,label="45%<win<50%",normed=True)
+		plt.hist(y[3],bins,alpha=0.5,label="50%<win<55%",normed=True)
+		plt.hist(y[4],bins,alpha=0.5,label="55%<win<65%",normed=True)
+		plt.hist(y[5],bins,alpha=0.5,label="65%<win")
+		plt.legend(loc='upper right')
 		plt.show()
-
-
-
-
+		"""
+np.set_printoptions(precision=2,suppress=True)
 myBee = Bee("V2_usa_mlb-2015.db")
 #myBee.analysis_run_over()
-myBee.stats_handi()
+#myBee.analysis_run_over()
+myBee.bet_prob()
+myBee = Bee("V2_usa_mlb-2014.db")
+myBee.bet_prob()
+myBee = Bee("V2_usa_mlb-2013.db")
+myBee.bet_prob()
+"""
 myBee = Bee("V2_usa_mlb-2014.db")
 myBee.stats_handi()
 myBee = Bee("V2_usa_mlb-2013.db")
 myBee.stats_handi()
-
+"""
 #myBee.generate_stability([100,3])
 #myBee.analysis_votes()
