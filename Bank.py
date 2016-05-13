@@ -247,7 +247,6 @@ class Bank:
 				"""
 				try:
 					fin = open(outputtxt,'r')
-					Parser(ii,db_file_itr)
 				except:
 					Parser(ii,db_file_itr)
 				"""
@@ -271,7 +270,7 @@ class Bank:
 				month = ""
 				while 1:
 					fin_line = fin.readline()
-					print fin_line
+					#print fin_line
 					if not fin_line: break
 					if fin_line.find("1 2 B") != -1:
 						fin_start = 1
@@ -473,7 +472,7 @@ class Bank:
 							for stat in stats_list_28:
 								insert_game.append(stat)
 							#69 arguments
-						print insert_game
+						#print insert_game
 						#cur.execute("""CREATE TABLE IF NOT EXISTS MLB(nid INTEGER primary key AUTOINCREMENT,day INT,month TEXT,year INT,\
 						with conn:
 							if mode == "score":
@@ -554,7 +553,7 @@ class Bank:
 		"""
 		pass
 	def get_game_info_from_str(self,mode,fin_line):
-		print "Fin_Line ",fin_line
+		#print "Fin_Line ",fin_line
 		cur_time = int(fin_line[0:2])
 		parlen_l = fin_line.find("(")
 		endcolon = fin_line[:parlen_l].rfind(":")
@@ -628,7 +627,7 @@ class Bank:
 			score_a_full.append(0)
 		score_h_full.append(score_h_extra)
 		score_a_full.append(score_a_extra)
-		if fin_line[endcolon:sharp].count(".") > len(over_under) and sharp != -1 or (fin_line.count(".") > 1 and sharp == -1):
+		if fin_line[endcolon:parlen_l].count(".") > len(over_under) and sharp != -1 or (fin_line.count(".") > 1 and sharp == -1):
 			odds_h = float(fin_line[enddot - 7:enddot - 2])
 			odds_a = float(fin_line[enddot - 2:enddot + 3])
 		elif fin_line.count("+") + fin_line.count("-") > 1:
@@ -658,7 +657,6 @@ class Bank:
 					odds_a_denom = odds_a_t
 				if odds_a_tt.isdigit() == 1:
 					odds_a_nom = odds_a_tt
-
 			odds_h = 1.0 + int(odds_h_denom) * 1.0 / int(odds_h_nom) if abs(float(odds_h_nom)) > 0.01 else 1.9
 			odds_a = 1.0 + int(odds_a_denom) * 1.0 / int(odds_a_nom) if abs(float(odds_a_nom)) > 0.01 else 1.9
 		if mode == "half":
@@ -697,7 +695,7 @@ class Bank:
 					page = requests.get(url)
 
 				tree = html.fromstring(page.text)
-
+				page.close()
 				percent = tree.xpath('//span[@class="consensus_percent"]/text()')
 				power = tree.xpath('//span[@class="score"]/text()')
 				home = tree.xpath('//span[@class="home"]/text()')
@@ -747,6 +745,7 @@ class Bank:
 		else:
 			fout_readline = fout.readline()
 			return_list_temp = fout_readline[1:len(fout_readline)-1].split(",")
+			print return_list_temp
 			ii=0
 			for itr in return_list_temp:
 				if ii < 6:
@@ -754,12 +753,13 @@ class Bank:
 				else:
 					return_list[ii] = (float(itr))
 				ii+=1
+			fout.close()
 			return return_list
 	def get_oddsshark(self,team_a_shark,team_h_shark,month_shark,day,year):
 		if str(team_h_shark) == "-1" or str(team_a_shark) == "-1":
 			return [50,50,50,50]
 		url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
-		print url
+		#print url
 #		page = requests.get(url)
 		try:
 			rr = urllib2.urlopen(url)
@@ -864,9 +864,54 @@ class Bank:
 			return 28
 		elif name == "Washington Nationals":
 			return 29
+		elif name =="Samsung Lions":
+			return 100
+		elif name =="SK Wyverns":
+			return 101
+		elif name =="LG Twins":
+			return 102
+		elif name=="Doosan Bears":
+			return 103
+		elif name=="KIA Tigers":
+			return 104
+		elif name=="Lotte Giants":
+			return 105
+		elif name=="Nexen Heroes":
+			return 106
+		elif name=="Hanwha Eagles":
+			return 107
+		elif name=="NC Dinos":
+			return 108
+		elif name=="KT Wizs":
+			return 109
+		elif name=="Chunichi Dragons":
+			return 200
+		elif name=="Hanshin Tigers":
+			return 201
+		elif name=="Hiroshima Carp":
+			return 202
+		elif name=="Yakult Swallows":
+			return 203
+		elif name=="Yokohama BayStars":
+			return 204
+		elif name=="Yomiuri Giants":
+			return 205
+		elif name=="Chiba Lotte Marines":
+			return 206
+		elif name=="Fukuoka S. Hawks":
+			return 207
+		elif name=="Nippon-Ham Fighters":
+			return 208
+		elif name=="Orix Buffaloes":
+			return 209
+		elif name=="Seibu Lions":
+			return 210
+		elif name=="Rakuten Gold. Eagles":
+			return 211
 		else:
 			return -1
 			pass
+		#kbo and npb added
 	def get_str_team_mlb(self,name):
 		if name == 0:
 			return "baltimore"
@@ -968,7 +1013,7 @@ class Bank:
 		pass
 numpy.set_printoptions(precision=2,suppress=True)
 #"""
-db_file = "mlb.txt"
+db_file = "kbo.txt"
 #myBank = Bank("half",db_file)
 myBank = Bank("v2",db_file)
 #myBank.create_database("all")
