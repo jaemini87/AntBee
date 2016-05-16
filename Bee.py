@@ -6,10 +6,12 @@ import matplotlib.patches as patches
 import matplotlib.path as path
 #from scipy.stats.stats import pearsonr
 import random
+import matplotlib.animation as animation
 class Bee:
 	Name = ""
 	Budjet = 100.0
 	Db_File = ""
+	threshold = 20
 	def __init__(self,db_file):
 		self.Db_File = db_file
 	def gen_Ref(self):
@@ -29,6 +31,7 @@ class Bee:
 					result_EV[(ii*4)+jj]+=1
 					return result_EV
 		pass
+
 	def generate_stability_(self,param):
 		"""
 			  odds < 1.6 - 2.5
@@ -203,7 +206,142 @@ class Bee:
 #		print hist_home.fetchone()
 #		print hist_away.fetchall()
 		pass
+	def get_oddsshark(self,win_h,fin_line):
+		#48 run_sco_h , run_all_h , team_era_h , run_sco_rd_h , run_all_rd_h , str_era_h , off_hit_h , hit_all_h , bul_inn_h , off_wal_h , def_wal_h , \
+		#run_sco_a , run_all_a , team_era_a , run_sco_rd_a , run_all_rd_a , str_era_a , off_ait_a , hit_all_a , bul_inn_a , off_wal_a , def_wal_a )\
+		#8:  score_h,score_a,
+		#10: score_h_half,score_a_half,
+		#12: score_ou,score_ou_half,
+		#14: odds_h,odds_a,
+		#16: odds_h_half,odds_a_half,
+		#18: odds_o,odds_u,
+		#20: odds_o_half,odds_u_half]
+		count=0
+		run_sco_h = fin_line[48]
+		run_sco_rd_h = fin_line[52]
+		off_hit_h = fin_line[55]
+		bul_inn_h = fin_line[57]
+		run_sco_a = fin_line[59]
+		run_sco_rd_a = fin_line[63]
+		off_hit_a = fin_line[66]
+		bul_inn_a = fin_line[68]
+		odds_h = fin_line[14]
+		odds_a = fin_line[15]
+		if win_h == 1:
+			if run_sco_h > run_sco_a+0.1:
+				count += 1
+			if run_sco_rd_h > run_sco_rd_a+ 0.2:
+				count += 1
+			if off_hit_h > off_hit_a + 0.1:
+				count += 1
+			if bul_inn_h < bul_inn_a - 0.4:
+				count += 10
+			if count > 7:
+				return 7
+			elif odds_h < odds_a :
+				return 5
+			else:
+				return 5
+		elif win_h == -1:
+			if run_sco_h > run_sco_a+0.1:
+				count += 1
+			if run_sco_rd_h > run_sco_rd_a+ 0.2:
+				count += 1
+			if off_hit_h > off_hit_a + 0.1:
+				count += 1
+			if bul_inn_h < bul_inn_a - 0.4:
+				count += 10
+			if count < 7:
+				return 3
+			elif odds_h < odds_a :
+				return 5
+			else:
+				return 5
+		elif win_h == 2:
+			return 5
+		elif win_h == -2:
+			return 5
+		else:
+			return 5
+		pass
+	def get_bull_pen(self,ou,fin_line):
+		b_h = fin_line[56]
+		b_a = fin_line[67]
+#		return True
+		if ou == 1:
+			if b_h + b_a > self.threshold:
+#			if b_h < b_a:
+				return True
+			else :
+				return False
+		elif ou == -1:
+			if b_h +b_a < self.threshold:
+#			if b_h > b_a :
+				return True
+			else:
+				return False
+		else:
+			return False
+		pass
+	def get_rand_list(self,fin_line):
+		#44 45 home away votes
+		#46 47 over under votes
+		rand_list = [[] for ii in range(0,4)]
+		full_score_ratio = fin_line[15]/(fin_line[14]+fin_line[15])
+		full_ou_ratio = fin_line[19]/(fin_line[18]+fin_line[19])
+		half_score_ratio = fin_line[17]/(fin_line[17]+fin_line[16])
+		half_ou_ratio = fin_line[21]/(fin_line[21]+fin_line[20])
+		"""
+		for rand in range(0,10):
+			if random.random() < full_score_ratio:
+				rand_list[0].append(1)
+			else:
+				rand_list[0].append(0)
+			if random.random() < full_ou_ratio:
+				rand_list[1].append(1)
+			else:
+				rand_list[1].append(0)
+			if random.random() < half_score_ratio:
+				rand_list[2].append(1)
+			else:
+				rand_list[2].append(0)
+			if random.random() < half_ou_ratio:
+				rand_list[3].append(1)
+			else:
+				rand_list[3].append(0)
+		"""
+		#if fin_line[44]<fin_line[45] and fin_line[14]<fin_line[15] and self.get_oddsshark(1,fin_line):
+		if self.get_oddsshark(1,fin_line):
+			rand_list[0].append( 7)
+		#elif fin_line[44]>fin_line[45] and fin_line[14]>fin_line[15] and self.get_oddsshark(-1,fin_line):
+		elif self.get_oddsshark(-1,fin_line):
+			rand_list[0].append( 3)
+		else:
+			rand_list[0].append( 5)
+		#if fin_line[46]>fin_line[47] and fin_line[18]>fin_line[19] and self.get_bull_pen(1,fin_line):
+		if fin_line[46]>fin_line[47] and fin_line[18]>fin_line[19] and self.get_bull_pen(1,fin_line):
+			rand_list[1].append( 7)
+		elif fin_line[46]<fin_line[47] and fin_line[18]<fin_line[19] and self.get_bull_pen(-1,fin_line):
+			rand_list[1].append( 3)
+		else:
+			rand_list[1].append( 5)
+		#if fin_line[44]<fin_line[45] and fin_line[16]<fin_line[17] and self.get_oddsshark(1,fin_line):
+		if self.get_oddsshark(2,fin_line):
+			rand_list[2].append( 7)
+		#elif fin_line[44]>fin_line[45] and fin_line[16]>fin_line[17] and self.get_oddsshark(-1,fin_line):
+		elif self.get_oddsshark(-2,fin_line):
+			rand_list[2].append( 3)
+		else:
+			rand_list[2].append( 5)
+		if fin_line[46]>fin_line[47] and fin_line[20]>fin_line[21] and self.get_bull_pen(1,fin_line):
+			rand_list[3].append( 7)
+		elif fin_line[46]<fin_line[47] and fin_line[20]<fin_line[21] and self.get_bull_pen(-1,fin_line):
+			rand_list[3].append( 3)
+		else:
+			rand_list[3].append( 5)
 
+		return rand_list
+		pass
 	def bet_prob(self):
 		#retrurn +ev list (fulltime,halftime,full ou,half ou)
 		#insert_game = [season,day,month,year,time,team_h,team_a,
@@ -219,17 +357,25 @@ class Bee:
 		cur.execute("select * from MLB_V2")
 		cum_bet_slip = [0.0 for _ in range(0,4)]
 		num_bet_slip = [0.0 for _ in range(0,4)]
+		prob_bet_slip = [0.0 for _ in range(0,8)]
+		nnum_bet_slip = [0.0 for _ in range(0,8)]
+		num_bet_slip_graph = 0
+		bet_slip_graph = []
+		bet_unit = 10.0
+		count=0
 		for fin_line in cur.fetchall():
 			full_score_ratio = fin_line[15]/(fin_line[14]+fin_line[15])
 			full_ou_ratio = fin_line[19]/(fin_line[18]+fin_line[19])
 			half_score_ratio = fin_line[17]/(fin_line[17]+fin_line[16])
 			half_ou_ratio = fin_line[21]/(fin_line[21]+fin_line[20])
 			full_score_win = 1 if fin_line[8]>fin_line[9] else -1
-			full_ou_win= 1 if fin_line[8]+fin_line[9]>fin_line[12] else (0 if fin_line[8]+fin_line[9]-fin_line[12]<0.1 else -1)
-			half_score_win = 1 if fin_line[10]>fin_line[11] else -1
-			half_ou_win = 1 if fin_line[11]+fin_line[10]>fin_line[13] else (0 if fin_line[10]+fin_line[11]-fin_line[13]<0.1 else -1)
+			full_ou_win= 1 if fin_line[8]+fin_line[9]>fin_line[12] else (0 if abs(fin_line[8]+fin_line[9]-fin_line[12])<0.1 else -1)
+			half_score_win = 1 if fin_line[10]>fin_line[11] else (0 if abs(fin_line[10]-fin_line[11])<0.1 else -1)
+			half_ou_win = 1 if fin_line[11]+fin_line[10]>fin_line[13] else (0 if abs(fin_line[10]+fin_line[11]-fin_line[13])<0.1 else -1)
 			bet_slip = []
 			rand_list = [[] for ii in range(0,4)]
+			rand_list = self.get_rand_list(fin_line)
+			"""
 			for rand in range(0,10):
 				if random.random() < full_score_ratio:
 					rand_list[0].append(1)
@@ -247,70 +393,107 @@ class Bee:
 					rand_list[3].append(1)
 				else:
 					rand_list[3].append(0)
+			"""
 			if sum(rand_list[0])>5 :
 				if 	full_score_win == 1:
 					bet_slip.append(fin_line[14]-1.0)
+					prob_bet_slip[0] += 1.0
+					nnum_bet_slip[0] += 1.0
 				else:
-					bet_slip.append(-1.0)
+					bet_slip.append(-1.0*bet_unit)
+					nnum_bet_slip[0] += 1.0
 			elif sum(rand_list[0])<5 :
 				if 	full_score_win == -1:
-					bet_slip.append(fin_line[15]-1.0)
+					bet_slip.append(fin_line[15]*bet_unit-bet_unit)
+					prob_bet_slip[1] += 1.0
+					nnum_bet_slip[1] += 1.0
 				else:
-					bet_slip.append(-1.0)
+					bet_slip.append(-1.0*bet_unit)
+					nnum_bet_slip[1] += 1.0
 			else:
 				bet_slip.append(0.0)
 			if sum(rand_list[1])>5 :
 				if 	full_ou_win == 1:
-					bet_slip.append(fin_line[18]-1.0)
+					bet_slip.append(fin_line[18]*bet_unit-bet_unit)
+					prob_bet_slip[2] += 1.0
+					nnum_bet_slip[2] += 1.0
 				elif full_ou_win == -1:
-					bet_slip.append(-1.0)
+					bet_slip.append(-1.0*bet_unit)
+					nnum_bet_slip[2] += 1.0
 				else:
 					bet_slip.append(0.0)
 			elif sum(rand_list[1])<5 :
 				if 	full_ou_win == -1:
-					bet_slip.append(fin_line[19]-1.0)
+					bet_slip.append(fin_line[19]*bet_unit-bet_unit)
+					prob_bet_slip[3] += 1.0
+					nnum_bet_slip[3] += 1.0
 				elif full_ou_win == 1:
-					bet_slip.append(-1.0)
+					bet_slip.append(-1.0*bet_unit)
+					nnum_bet_slip[3] += 1.0
 				else:
 					bet_slip.append(0.0)
 			else:
 				bet_slip.append(0.0)
 			if sum(rand_list[2])>5 :
 				if 	half_score_win == 1:
-					bet_slip.append(fin_line[16]-1.0)
+					bet_slip.append(fin_line[16]*bet_unit-bet_unit)
+					prob_bet_slip[4] += 1.0
+					nnum_bet_slip[4] += 1.0
 				elif half_score_win == -1:
-					bet_slip.append(-1.0)
+					bet_slip.append(-1.0*bet_unit)
+					nnum_bet_slip[4] += 1.0
 				else:
 					bet_slip.append(0.0)
 			elif sum(rand_list[2])<5 :
 				if 	half_score_win == -1:
-					bet_slip.append(fin_line[17]-1.0)
+					bet_slip.append(fin_line[17]*bet_unit-bet_unit)
+					prob_bet_slip[5] += 1.0
+					nnum_bet_slip[5] += 1.0
 				elif half_score_win == 1:
-					bet_slip.append(-1.0)
+					bet_slip.append(-1.0*bet_unit)
+					nnum_bet_slip[5] += 1.0
 				else:
 					bet_slip.append(0.0)
 			else:
 				bet_slip.append(0.0)
 			if sum(rand_list[3])>5 :
 				if 	half_ou_win == 1:
-					bet_slip.append(fin_line[20]-1.0)
+					bet_slip.append(fin_line[20]*bet_unit-bet_unit)
+					prob_bet_slip[6] += 1.0
+					nnum_bet_slip[6] += 1.0
 				elif half_ou_win == -1:
-					bet_slip.append(-1.0)
+					bet_slip.append(-1.0*bet_unit)
+					nnum_bet_slip[6] += 1.0
 				else:
 					bet_slip.append(0.0)
 			elif sum(rand_list[3])<5 :
 				if 	half_ou_win == -1:
-					bet_slip.append(fin_line[21]-1.0)
+					bet_slip.append(fin_line[21]*bet_unit-bet_unit)
+					prob_bet_slip[7] += 1.0
+					nnum_bet_slip[7] += 1.0
 				elif half_ou_win == 1:
-					bet_slip.append(-1.0)
+					bet_slip.append(-1.0*bet_unit)
+					nnum_bet_slip[7] += 1.0
 				else:
 					bet_slip.append(0.0)
 			else:
 				bet_slip.append(0.0)
 			cum_bet_slip += np.array(bet_slip)
+			# bet_slip_graph.append(bet_slip[1])
+			bet_slip_graph.append([cum_bet_slip[1],cum_bet_slip[3]])
+			num_bet_slip_graph+=1
+			if num_bet_slip_graph%10==1:
+				bet_unit+=1.0
 			num_bet_slip += np.array(bet_slip)/(np.array(bet_slip)-0.0000001)
+		fig,ax = plt.subplots()
+		x = [ii for ii in range(0,num_bet_slip_graph)]
+		y = bet_slip_graph
+		ax.plot(x,y)
+		plt.show()
+		print "COUNT",count
 		print cum_bet_slip
 		print num_bet_slip
+		print np.array(prob_bet_slip)/np.array(nnum_bet_slip)
 		pass
 
 	def generate_stability_result(self,game_number,game_seeds):
@@ -1297,14 +1480,20 @@ class Bee:
 		plt.show()
 		"""
 np.set_printoptions(precision=2,suppress=True)
-myBee = Bee("V2_usa_mlb-2015.db")
-#myBee.analysis_run_over()
-#myBee.analysis_run_over()
-myBee.bet_prob()
-myBee = Bee("V2_usa_mlb-2014.db")
-myBee.bet_prob()
-myBee = Bee("V2_usa_mlb-2013.db")
-myBee.bet_prob()
+for ii in range(16,30):
+	print ii
+	myBee = Bee("V2_usa_mlb-2015.db")
+	myBee.threshold = ii
+	#myBee.analysis_run_over()
+	#myBee.analysis_run_over()
+	myBee.bet_prob()
+	myBee = Bee("V2_usa_mlb-2014.db")
+	myBee.threshold = ii
+	myBee.bet_prob()
+	myBee = Bee("V2_usa_mlb-2013.db")
+	myBee.threshold = ii
+	myBee.bet_prob()
+	break
 """
 myBee = Bee("V2_usa_mlb-2014.db")
 myBee.stats_handi()

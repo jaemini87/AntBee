@@ -1013,7 +1013,7 @@ class Bank:
 		pass
 numpy.set_printoptions(precision=2,suppress=True)
 #"""
-db_file = "kbo.txt"
+db_file = "mlb.txt"
 #myBank = Bank("half",db_file)
 myBank = Bank("v2",db_file)
 #myBank.create_database("all")
