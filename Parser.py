@@ -16,8 +16,8 @@ def parser_today_games():
 	#cacheoption = "--cache-dir ./cache_"+str_league
 	inputurl = "http://www.oddsportal.com/baseball/usa/mlb"
 	#inputurl = "http://www.oddsportal.com/baseball/usa/mlb"+str(str_year)+"/results/#/page/"+str(ii)
-	command = "wkhtmltopdf "+inputurl+" "+outputpdf
-	#command = "wkhtmltopdf "+cacheoption+" "+inputurl+" "+outputpdf
+	command = "wkhtmltopdf"+wkhtmltopdf_option+inputurl+" "+outputpdf
+	#command = "wkhtmltopdf "+wkhtmltopdf_option+cacheoption+" "+inputurl+" "+outputpdf
 	os.system(command)
 	print command
 	f = open(outputpdf, 'rb')
@@ -46,7 +46,7 @@ def parser_today_games():
 	outputtxt_final = "./"+str_league+str_year+"/final"+str(ii)+".txt"
 	for game_url in game_urls:
 		fout = open(outputtxt, 'w')
-		command = "wkhtmltopdf " + game_url + " temp.pdf"
+		command = "wkhtmltopdf"+wkhtmltopdf_option + game_url + " temp.pdf"
 		os.system(command)
 		command = "pdftotext -raw temp.pdf temp.txt"
 		os.system(command)
@@ -201,6 +201,125 @@ def parser_today_games():
 	fout.close()
 	print game_over_under
 	return game_over_under
+
+def txt_parser_ah_full(file_name):
+	fin_ah = open(file_name, 'r')
+	team = ""
+	score_h = -1
+	score_a = -1
+	ou = 0.0
+	ou_full = 0.0
+	ou_half = 0.0
+	over = 5.0
+	under = 1.0
+	over_full = 5.0
+	under_full = 0.0
+	over_half = 1.5
+	under_half = 0.0
+	odds_h_half = 1.9
+	odds_a_half = 1.9
+	over_t = 1.9
+	under_t = 1.9
+	parse = 0
+	while 1:
+		fin_line = fin_ah.readline()
+		if not fin_line:
+			break
+		odds_h = 0.0
+		odds_a = 0.0
+		if (fin_line.count(".") < 2 and fin_line.find("sian") != -1 and fin_line.find("%") != -1) :
+			fin_line = fin_ah.readline()
+			if fin_line.find(".")!= -1:
+				over_t = float(fin_line)
+				fin_line = fin_ah.readline()
+				under_t = float(fin_line)
+				parse = 1
+			elif fin_line.find("+") != -1 or fin_line.find("-") != -1:
+				if fin_line.find("+") != -1:
+					odds_h = 1.0 + int(fin_line[1:len(fin_line)-1]) / 100.0
+				elif fin_line.find("-") != -1:
+					odds_h = 1.0 + 100.0 / int(fin_line[1:len(fin_line)-1])
+				fin_line = fin_ah.readline()
+				if fin_line.find("+") != -1:
+					odds_a = 1.0 + int(fin_line[1:len(fin_line)-1]) / 100.0
+				elif fin_line.find("-") != -1:
+					odds_a = 1.0 + 100.0 / int(fin_line[1:len(fin_line)-1])
+				over_t = odds_h
+				under_t = odds_a
+				parse = 1
+			elif fin_line.find("/") != -1:
+				odds_h_denom = 0
+				odds_h_nom = 0
+				slash = fin_line.find("/")
+				odds_h_denom = fin_line[0:slash]
+				odds_h_nom = fin_line[slash + 1:len(fin_line)-1]
+				over_t = 1.0 + int(odds_h_denom) * 1.0 / int(odds_h_nom)
+
+				fin_line = fin_ah.readline()
+				slash = fin_line.find("/")
+				odds_h_denom = fin_line[0:slash]
+				odds_h_nom = fin_line[slash + 1:len(fin_line)-1]
+				under_t = 1.0 + int(odds_h_denom) * 1.0 / int(odds_h_nom)
+				parse = 1
+			over_t = int(over_t*100)*1.0/100.0
+			under_t = int(under_t*100)*1.0/100.0
+			if abs(over - under) > abs(over_t - under_t):
+				############Conver the value!!#############
+				over = under_t
+				under = over_t
+	if parse == 0:
+		fin_ah = open(file_name)
+		while 1:
+			fin_line = fin_ah.readline()
+			if not fin_line:
+				break
+			odds_h = 0.0
+			odds_a = 0.0
+			if fin_line[0] =="0":
+				dot = fin_line.find(".")
+				rdot = fin_line.rfind(".")
+				plus = fin_line[1:].find("+")
+				rplus = fin_line[1:].find("+")
+				minus = fin_line[:-2].find("-")
+				rminus = fin_line[:-2].find("-")
+				dash = fin_line.find("/")
+				rdash = fin_line.find("/")
+				if dot != -1:
+					over_t = float(fin_line[dot-1:dot+3])
+					under_t = float(fin_line[rdot-1:rdot+3])
+				elif plus != -1:
+					if plus+1 < minus:
+						odds_h = 1.0 + int(fin_line[plus+2:plus+5]) / 100.0
+						odds_a = 1.0 + 100.0 / int(fin_line[minus+1:minus+4])
+					elif minus < plus:
+						odds_h = 1.0 + 100.0 / int(fin_line[minus+1:minus+4])
+						odds_a = 1.0 + int(fin_line[plus+2:plus+5]) / 100.0
+					over_t = odds_h
+					under_t = odds_a
+				elif plus == -1 and fin_line.count("-") > 2:
+					odds_h = 1.0 + 100.0 / int(fin_line[minus+1:minus+4])
+					odds_a = 1.0 + 100.0 / int(fin_line[rminus+1:rminus+4])
+				elif dash != -1:
+					odds_h_denom = 0
+					odds_h_nom = 0
+					slash = dash
+					odds_h_denom = fin_line[slash-2:slash]
+					odds_h_nom = fin_line[slash + 1:slash+4]
+					over_t = 1.0 + int(odds_h_denom) * 1.0 / int(odds_h_nom)
+					slash = rdash
+					odds_h_denom = fin_line[slash-2:slash]
+					odds_h_nom = fin_line[slash + 1:slash+4]
+					under_t = 1.0 + int(odds_h_denom) * 1.0 / int(odds_h_nom)
+				over_t = int(over_t*100)*1.0/100.0
+				under_t = int(under_t*100)*1.0/100.0
+				if abs(over - under) > abs(over_t - under_t):
+					############Conver the value!!#############
+					over = under_t
+					under = over_t
+	if parse == 0 and over == 1.9 and under == 1.9:
+		print file_name
+	return [over,under]
+	pass
 def txt_parser_ah_half(file_name):
 	fin_ah = open(file_name, 'r')
 	team = ""
@@ -624,6 +743,8 @@ def Parser(itr,db_file_itr):
 	mode,str_league,str_year,pagenumber = db_file_itr
 	ii = itr
 	outputpdf = "./"+str_league+str_year+"/"+str(ii)+".pdf"
+	#wkhtmltopdf_option = "--no-images --disable-javascript --exclude-from-outline"
+	wkhtmltopdf_option = " -g -l "
 	if mode == "half":
 		outputtxt_final = "./"+str_league+str_year+"/"+str(ii)+str(mode)+"_final.txt"
 	elif mode == "v2":
@@ -635,11 +756,12 @@ def Parser(itr,db_file_itr):
 	except:
 		cacheoption = "--cache-dir ./cache_"+str_league
 		inputurl = "http://www.oddsportal.com/baseball/"+str(str_league)+"/"+str(str_year)+"/results/#/page/"+str(ii)
-		command = "wkhtmltopdf "+inputurl+" "+outputpdf
+		command = "wkhtmltopdf"+wkhtmltopdf_option+inputurl+" "+outputpdf
 		os.system(command)
 		print command
 		f = open(outputpdf, 'rb')
 		pass
+	wkhtmltopdf_option = " -g -l "
 	pdf = PyPDF2.PdfFileReader(f)
 	pgs = pdf.getNumPages()
 	key = '/Annots'
@@ -683,14 +805,16 @@ def Parser(itr,db_file_itr):
 		under_half = 0.0
 		odds_h_half = 1.9
 		odds_a_half = 1.9
+		handi_h = 1.9
+		handi_a = 1.9
 		if mode == "half":
-			command = "wkhtmltopdf " + game_url + "#over-under;3 temp_ou.pdf"
+			command = "wkhtmltopdf"+wkhtmltopdf_option + game_url + "#over-under;3 temp_ou.pdf"
 			os.system(command)
 			print command
 			command = "pdftotext -raw temp_ou_half.pdf temp_ou_half.txt"
 			[team,score_h,score_a,ou_full,over_full,under_full,score_full] = txt_parser_ou_half("temp_ou_full.txt")
 			os.system(command)
-			command = "wkhtmltopdf " + game_url + "#ah;3 temp_ah.pdf"
+			command = "wkhtmltopdf"+wkhtmltopdf_option + game_url + "#ah;3 temp_ah.pdf"
 			print command
 			os.system(command)
 			command = "pdftotext -raw temp_ah_half.pdf temp_ah_half.txt"
@@ -705,11 +829,21 @@ def Parser(itr,db_file_itr):
 					game_url_mod += ii
 				if ii == "/":
 					count += 1
+			if str_league == "nba":
+				try:
+					outputtxt_temp = "./"+str_league+str_year+"/"+str(game_url_mod)+"_ou_last.txt"
+					fin = open(outputtxt_temp,'r')
+				except:
+					command = "wkhtmltopdf"+wkhtmltopdf_option + game_url + "#over-under;4 temp_ou_last.pdf"
+					os.system(command)
+					command = "pdftotext -raw temp_ou_last.pdf "+outputtxt_temp
+					os.system(command)
+				[team,score_h,score_a,ou_full,over_full,under_full,score_full] = txt_parser_ou_full(outputtxt_temp)
 			try:
 				outputtxt_temp = "./"+str_league+str_year+"/"+str(game_url_mod)+"_ou_full.txt"
 				fin = open(outputtxt_temp,'r')
 			except:
-				command = "wkhtmltopdf " + game_url + "#over-under;1 temp_ou_full.pdf"
+				command = "wkhtmltopdf"+wkhtmltopdf_option + game_url + "#over-under;1 temp_ou_full.pdf"
 				os.system(command)
 				command = "pdftotext -raw temp_ou_full.pdf "+outputtxt_temp
 				os.system(command)
@@ -718,32 +852,45 @@ def Parser(itr,db_file_itr):
 				outputtxt_temp = "./"+str_league+str_year+"/"+str(game_url_mod)+"_ou_half.txt"
 				fin = open(outputtxt_temp,'r')
 			except:
-				command = "wkhtmltopdf " + game_url + "#over-under;3 temp_ou_half.pdf"
+				command = "wkhtmltopdf"+wkhtmltopdf_option + game_url + "#over-under;3 temp_ou_half.pdf"
 				os.system(command)
 				print command
 				command = "pdftotext -raw temp_ou_half.pdf "+outputtxt_temp
 				os.system(command)
 			[ou_half,over_half,under_half] = txt_parser_ou_half(outputtxt_temp)
+			"""
+			try:
+				outputtxt_temp = "./"+str_league+str_year+"/"+str(game_url_mod)+"_ah_full.txt"
+				fin = open(outputtxt_temp,'r')
+			except:
+				command = "wkhtmltopdf"+wkhtmltopdf_option + game_url + "#ah;1 temp_ah_full.pdf"
+				print command
+				os.system(command)
+				command = "pdftotext -raw temp_ah_full.pdf "+outputtxt_temp
+				os.system(command)
+			[handi_h,handi_a] = txt_parser_ah_full(outputtxt_temp)
+			"""
 			try:
 				outputtxt_temp = "./"+str_league+str_year+"/"+str(game_url_mod)+"_ah_half.txt"
 				fin = open(outputtxt_temp,'r')
 			except:
-				command = "wkhtmltopdf " + game_url + "#ah;3 temp_ah_half.pdf"
+				command = "wkhtmltopdf"+wkhtmltopdf_option + game_url + "#ah;3 temp_ah_half.pdf"
 				print command
 				os.system(command)
 				command = "pdftotext -raw temp_ah_half.pdf "+outputtxt_temp
 				os.system(command)
 			[odds_h_half,odds_a_half] = txt_parser_ah_half(outputtxt_temp)
 		else :
-			command = "wkhtmltopdf " + game_url + "#over-under;1 temp_ou.pdf"
+			command = "wkhtmltopdf"+wkhtmltopdf_option + game_url + "#over-under;1 temp_ou.pdf"
 			os.system(command)
 			command = "pdftotext -raw temp_ou.pdf temp_ou.txt"
 			os.system(command)
 			[team,score_h,score_a,ou_full,over_full,under_full,score_full] = txt_parser_ou_full("temp_ou.txt")
-
+#		continue
 		if mode == "half":
 			temp = [team,score_h,score_a,odds_h_half,odds_a_half,ou,over,under,score_full]
 		elif mode == "v2":
+			#temp = [team,score_h,score_a,odds_h_half,odds_a_half,handi_h,handi_a,ou_full,ou_half,over_full,under_full,over_half,under_half,score_full]
 			temp = [team,score_h,score_a,odds_h_half,odds_a_half,ou_full,ou_half,over_full,under_full,over_half,under_half,score_full]
 		else:
 			temp = [team,score_h,score_a,ou,over,under,score_full]
@@ -780,6 +927,7 @@ def Parser(itr,db_file_itr):
 					team,score_h,score_a,score_h_half,score_a_half,ou,over,under,score_full = kkk
 				elif mode == "v2":
 					team,score_h,score_a,odds_h_half,odds_a_half,ou_full,ou_half,over_full,under_full,over_half,under_half,score_full = kkk
+					#team,score_h,score_a,odds_h_half,odds_a_half,handi_h,handi_a,ou_full,ou_half,over_full,under_full,over_half,under_half,score_full = kkk
 				else:
 					team,score_h,score_a,ou,over,under,score_full = kkk
 				score = str(score_h)+":"+str(score_a)
@@ -791,6 +939,7 @@ def Parser(itr,db_file_itr):
 					mod_endcolon = endcolon-2
 				else:
 					mod_endcolon = endcolon-3
+				"""
 				mod_team = fin_line[fin_line.find(" ")+1:mod_endcolon]
 				new_team = ""
 				for ii in range(0,len(mod_team)):
@@ -803,14 +952,19 @@ def Parser(itr,db_file_itr):
 						new_team += mod_team[ii]
 				new_fin_line = fin_line[0:fin_line.find(" ")+1]+new_team+fin_line[mod_endcolon:]
 				fin_line = new_fin_line
+				"""
 				if len(fin_line) < 12 or fin_line.find("-") == -1:
 					continue
-				elif (fin_line[6:9] == team[0:3] and fin_line[dash2+2:dash2+5] == team[dash+2:dash+5])\
+#				elif (fin_line[6:9] == team[0:3] and fin_line[dash2+2:dash2+5] == team[dash+2:dash+5])\
+				elif team_match(fin_line,team) == 1and fin_line.find(score) == -1:
+					print "ERROR"
+				elif team_match(fin_line,team) == 1\
 					and fin_line.find(score) != -1 and (fin_line.find("canc") == -1 and fin_line.find("post") == -1):
 					if not game_dup:
 						if mode == "half":
 							fout.write(fin_line[0:len(fin_line)-1]+"#"+str(score_h_half)+" "+str(score_a_half)+" "+str(ou)+" "+str(over)+" "+str(under)+" "+str(score_full))
 						elif mode =="v2":
+							#fout.write(fin_line[0:len(fin_line)-1]+"#"+str(odds_h_half)+" "+str(odds_a_half)+" "+str(handi_h)+" "+str(handi_a)+" "+str(ou_full)+" "+str(ou_half)+" " +str(over_full)+" "+str(under_full)+" "+str(over_half)+" "+str(under_half)+" "+str(score_full))
 							fout.write(fin_line[0:len(fin_line)-1]+"#"+str(odds_h_half)+" "+str(odds_a_half)+" "+str(ou_full)+" "+str(ou_half)+" " +str(over_full)+" "+str(under_full)+" "+str(over_half)+" "+str(under_half)+" "+str(score_full))
 						else:
 							fout.write(fin_line[0:len(fin_line)-1]+"#"+str(ou)+" "+str(over)+" "+str(under)+" "+str(score_full))
@@ -833,6 +987,7 @@ def Parser(itr,db_file_itr):
 				if mode == "half":
 					fout.write(fin_line[0:len(fin_line)-1]+"#"+str(1.9)+" "+str(1.9)+" "+str(7.3)+" "+str(1.9)+" "+str(1.9)+" (0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0)"+"\n")
 				elif mode =="v2":
+					#fout.write(fin_line[0:len(fin_line)-1]+"# 1.86 1.86 1.86 1.86 7.3 4.3 1.86 1.86 1.86 1.86 (0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0)"+"\n")
 					fout.write(fin_line[0:len(fin_line)-1]+"# 1.86 1.86 7.3 4.3 1.86 1.86 1.86 1.86 (0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0)"+"\n")
 				else:
 					fout.write(fin_line[0:len(fin_line)-1]+"#"+str(7.3)+" "+str(1.9)+" "+str(1.9)+" (0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0, 0:0)"+"\n")
@@ -846,7 +1001,38 @@ def Parser(itr,db_file_itr):
 #Parser("mlb.txt")
 #parser_today_games()
 
+def team_match(fin_line, team):
+	team_dash = team.find("-")
+	fin_dash = fin_line.find("-")
+	if fin_line.rfind(":") < 5:
+		fin_rcolon = fin_line.find("canc")-1
+	else:
+		fin_rcolon = fin_line.rfind(":")-2
 
+	team_h_a = ""
+	team_h_b = ""
+	team_a_a = ""
+	team_a_b = ""
+	for ii in fin_line[5:fin_dash]:
+		if ii != " ":
+			team_h_a += ii
+	for ii in fin_line[fin_dash + 1:fin_rcolon]:
+		if ii != " ":
+			team_a_a += ii
+	for ii in team[:team_dash]:
+		if ii != " ":
+			team_h_b += ii
+	for ii in team[team_dash+1:]:
+		if ii != " ":
+			team_a_b += ii
+	if len(team_h_a) < 4 or len(team_h_b)<4 or len(team_h_b) <4 or len(team_a_b)<4:
+		print fin_line
+		return -1
+	if team_h_a.find(team_h_b[0:3]) != -1 and team_a_a.find(team_a_b[0:3]) != -1:
+		return 1
+	else:
+		return -1
+	pass
 
 
 

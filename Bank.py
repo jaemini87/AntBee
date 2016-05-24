@@ -247,6 +247,7 @@ class Bank:
 				"""
 				try:
 					fin = open(outputtxt,'r')
+					Parser(ii,db_file_itr)
 				except:
 					Parser(ii,db_file_itr)
 				"""
@@ -270,7 +271,7 @@ class Bank:
 				month = ""
 				while 1:
 					fin_line = fin.readline()
-					#print fin_line
+					print fin_line
 					if not fin_line: break
 					if fin_line.find("1 2 B") != -1:
 						fin_start = 1
@@ -461,6 +462,7 @@ class Bank:
 							score_h_half = sum(score_h_full[0:5])
 							score_a_half = sum(score_a_full[0:5])
 							#21 argurments
+							#insert_game = [season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_half,score_a_half,score_ou,score_ou_half,odds_h,odds_a,odds_h_half,odds_a_half,handi_h,handi_a,odds_o,odds_u,odds_o_half,odds_u_half]
 							insert_game = [season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_half,score_a_half,score_ou,score_ou_half,odds_h,odds_a,odds_h_half,odds_a_half,odds_o,odds_u,odds_o_half,odds_u_half]
 							#Score append
 							#20 arguments
@@ -472,7 +474,7 @@ class Bank:
 							for stat in stats_list_28:
 								insert_game.append(stat)
 							#69 arguments
-						#print insert_game
+						print insert_game
 						#cur.execute("""CREATE TABLE IF NOT EXISTS MLB(nid INTEGER primary key AUTOINCREMENT,day INT,month TEXT,year INT,\
 						with conn:
 							if mode == "score":
@@ -519,7 +521,9 @@ class Bank:
 												P0,P1,C0,C1,C2,C3,S0,S1,S2,S3,S4,S5,S6,S7,S8,S9,S10,S11,S12,S13,S14,S15,S16,S17,S18,S19,S20,S21)\
 												VALUES(?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?,?,?,?,? , ?)""",(insert_game,))
 							elif mode =="v2":
+								#odds_h_full REAL, odds_a_full REAL, odds_h_half REAL, odds_a_half REAL, handi_h REAL, handi_a REAL, ou_full REAL, ou_half REAL, over_full REAL, under_full REAL,\
 								print insert_game
+							#insert_game = [season,day,month,year,time,team_h,team_a,score_h,score_a,score_h_half,score_a_half,score_ou,score_ou_half,odds_h,odds_a,odds_h_half,odds_a_half,odds_o,odds_u,odds_o_half,odds_u_half]
 								cur.execute("""CREATE TABLE IF NOT EXISTS MLB_V2(nid INTEGER primary key AUTOINCREMENT,season TEXT,day INT,month TEXT,\
 												year INTEGER,time INTEGER, team_h TEXT, team_a TEXT, score_h_full INTEGER, score_a_full INTEGER, score_h_half INTEGER, score_a_half INTEGER,\
 												odds_h_full REAL, odds_a_full REAL, odds_h_half REAL, odds_a_half REAL, ou_full REAL, ou_half REAL, over_full REAL, under_full REAL,\
@@ -531,7 +535,7 @@ class Bank:
 												run_sco_a REAL, run_all_a REAL, team_era_a REAL, run_sco_rd_a REAL, run_all_rd_a REAL, str_era_a REAL, off_ait_a REAL, hit_all_a REAL, bul_inn_a REAL, off_wal_a REAL, def_wal_a REAL)""")
 								cur.executemany("""INSERT INTO MLB_V2(season ,day ,month ,\
 												year ,time , team_h , team_a , score_h_full , score_a_full , score_h_half , score_a_half ,\
-												odds_h_full , odds_a_full , odds_h_half , odds_a_half , ou_full , ou_half , over_full , under_full ,\
+												odds_h_full , odds_a_full , odds_h_half , odds_a_half ,ou_full , ou_half , over_full , under_full ,\
 												over_half , under_half ,\
 												inn_h_1 , inn_h_2 , inn_h_3 , inn_h_4 , inn_h_5 , inn_h_6 , inn_h_7 , inn_h_8 , inn_h_9 ,inn_h_e ,\
 												inn_a_1 , inn_a_2 , inn_a_3 , inn_a_4 , inn_a_5 , inn_a_6 , inn_a_7 , inn_a_8 , inn_a_9 ,inn_a_e ,\
@@ -553,7 +557,7 @@ class Bank:
 		"""
 		pass
 	def get_game_info_from_str(self,mode,fin_line):
-		#print "Fin_Line ",fin_line
+		print "Fin_Line ",fin_line
 		cur_time = int(fin_line[0:2])
 		parlen_l = fin_line.find("(")
 		endcolon = fin_line[:parlen_l].rfind(":")
@@ -572,6 +576,7 @@ class Bank:
 		if mode == "half":
 			score_ou,odds_o,odds_u = over_under
 		elif mode =="v2":
+			#odds_h_half,odds_a_half,handi_h,handi_a,score_ou,score_ou_half,odds_o,odds_u,odds_o_half,odds_u_half = over_under
 			odds_h_half,odds_a_half,score_ou,score_ou_half,odds_o,odds_u,odds_o_half,odds_u_half = over_under
 		else:
 			odds_h_opt,odds_a_opt,score_ou,odds_o,odds_u = over_under
@@ -627,7 +632,7 @@ class Bank:
 			score_a_full.append(0)
 		score_h_full.append(score_h_extra)
 		score_a_full.append(score_a_extra)
-		if fin_line[endcolon:parlen_l].count(".") > len(over_under) and sharp != -1 or (fin_line.count(".") > 1 and sharp == -1):
+		if fin_line[endcolon:sharp].count(".") > 1 and sharp != -1 or (fin_line.count(".") > 1 and sharp == -1):
 			odds_h = float(fin_line[enddot - 7:enddot - 2])
 			odds_a = float(fin_line[enddot - 2:enddot + 3])
 		elif fin_line.count("+") + fin_line.count("-") > 1:
@@ -657,6 +662,7 @@ class Bank:
 					odds_a_denom = odds_a_t
 				if odds_a_tt.isdigit() == 1:
 					odds_a_nom = odds_a_tt
+
 			odds_h = 1.0 + int(odds_h_denom) * 1.0 / int(odds_h_nom) if abs(float(odds_h_nom)) > 0.01 else 1.9
 			odds_a = 1.0 + int(odds_a_denom) * 1.0 / int(odds_a_nom) if abs(float(odds_a_nom)) > 0.01 else 1.9
 		if mode == "half":
@@ -693,9 +699,10 @@ class Bank:
 				except requests.HTTPError,e:
 					print e.code
 					page = requests.get(url)
-
+					print "ERRRRRRRRRRRRR"
+					return -1
 				tree = html.fromstring(page.text)
-				page.close()
+
 				percent = tree.xpath('//span[@class="consensus_percent"]/text()')
 				power = tree.xpath('//span[@class="score"]/text()')
 				home = tree.xpath('//span[@class="home"]/text()')
@@ -745,7 +752,6 @@ class Bank:
 		else:
 			fout_readline = fout.readline()
 			return_list_temp = fout_readline[1:len(fout_readline)-1].split(",")
-			print return_list_temp
 			ii=0
 			for itr in return_list_temp:
 				if ii < 6:
@@ -753,13 +759,12 @@ class Bank:
 				else:
 					return_list[ii] = (float(itr))
 				ii+=1
-			fout.close()
 			return return_list
 	def get_oddsshark(self,team_a_shark,team_h_shark,month_shark,day,year):
 		if str(team_h_shark) == "-1" or str(team_a_shark) == "-1":
 			return [50,50,50,50]
 		url = "http://www.oddsshark.com/mlb/"+team_a_shark+"-"+team_h_shark+"-odds-"+month_shark+"-"+str(day)+"-"+str(year)
-		#print url
+		print url
 #		page = requests.get(url)
 		try:
 			rr = urllib2.urlopen(url)
@@ -804,114 +809,73 @@ class Bank:
 	def convert_portal_shark(self,date,games,league):
 		pass
 	def get_int_team_mlb(self,name):
-		if name == "Baltimore Orioles":
+		new_name = ""
+		for ii in name:
+			if ii != " ":
+				new_name += ii
+		if new_name == "BaltimoreOrioles":
 			return 0
-		elif name == "Boston Red Sox":
+		elif new_name == "BostonRedSox":
 			return 1
-		elif name == "Chicago White Sox":
+		elif new_name == "ChicagoWhiteSox":
 			return 2
-		elif name == "Cleveland Indians":
+		elif new_name == "ClevelandIndians":
 			return 3
-		elif name == 	"Detroit Tigers":
+		elif new_name == "DetroitTigers":
 			return 4
-		elif name == "Houston Astros":
+		elif new_name == "HoustonAstros":
 			return 5
-		elif name == "Kansas City Royals":
+		elif new_name == "KansasCityRoyals":
 			return 6
-		elif name == "Los Angeles Angels":
+		elif new_name == "LosAngelesAngels":
 			return 7
-		elif name == "Minnesota Twins":
+		elif new_name == "MinnesotaTwins":
 			return 8
-		elif name == "New York Yankees":
+		elif new_name == "NewYorkYankees":
 			return 9
-		elif name == "Oakland Athletics":
+		elif new_name == "OaklandAthletics":
 			return 10
-		elif name == "Seattle Mariners":
+		elif new_name == "SeattleMariners":
 			return 11
-		elif name == "Tampa Bay Rays":
+		elif new_name == "TampaBayRays":
 			return 12
-		elif name == "Texas Rangers":
+		elif new_name == "TexasRangers":
 			return 13
-		elif name == "Toronto Blue Jays":
+		elif new_name == "TorontoBlueJays":
 			return 14
-		elif name == "Arizona Diamondbacks":
+		elif new_name == "ArizonaDiamondbacks":
 			return 15
-		elif name == "Atlanta Braves":
+		elif new_name == "AtlantaBraves":
 			return 16
-		elif name == "Chicago Cubs":
+		elif new_name == "ChicagoCubs":
 			return 17
-		elif name == "Cincinnati Reds":
+		elif new_name == "CincinnatiReds":
 			return 18
-		elif name == "Colorado Rockies":
+		elif new_name == "ColoradoRockies":
 			return 19
-		elif name == "Los Angeles Dodgers":
+		elif new_name == "LosAngelesDodgers":
 			return 20
-		elif name == "Miami Marlins":
+		elif new_name == "MiamiMarlins":
 			return 21
-		elif name == "Milwaukee Brewers":
+		elif new_name == "MilwaukeeBrewers":
 			return 22
-		elif name == "New York Mets":
+		elif new_name == "NewYorkMets":
 			return 23
-		elif name == "Philadelphia Phillies":
+		elif new_name == "PhiladelphiaPhillies":
 			return 24
-		elif name == "Pittsburgh Pirates":
+		elif new_name == "PittsburghPirates":
 			return 25
-		elif name == "San Diego Padres":
+		elif new_name == "SanDiegoPadres":
 			return 26
-		elif name == "San Francisco Giants":
+		elif new_name == "SanFranciscoGiants":
 			return 27
-		elif name == "St.Louis Cardinals":
+		elif new_name == "St.LouisCardinals":
 			return 28
-		elif name == "Washington Nationals":
+		elif new_name == "WashingtonNationals":
 			return 29
-		elif name =="Samsung Lions":
-			return 100
-		elif name =="SK Wyverns":
-			return 101
-		elif name =="LG Twins":
-			return 102
-		elif name=="Doosan Bears":
-			return 103
-		elif name=="KIA Tigers":
-			return 104
-		elif name=="Lotte Giants":
-			return 105
-		elif name=="Nexen Heroes":
-			return 106
-		elif name=="Hanwha Eagles":
-			return 107
-		elif name=="NC Dinos":
-			return 108
-		elif name=="KT Wizs":
-			return 109
-		elif name=="Chunichi Dragons":
-			return 200
-		elif name=="Hanshin Tigers":
-			return 201
-		elif name=="Hiroshima Carp":
-			return 202
-		elif name=="Yakult Swallows":
-			return 203
-		elif name=="Yokohama BayStars":
-			return 204
-		elif name=="Yomiuri Giants":
-			return 205
-		elif name=="Chiba Lotte Marines":
-			return 206
-		elif name=="Fukuoka S. Hawks":
-			return 207
-		elif name=="Nippon-Ham Fighters":
-			return 208
-		elif name=="Orix Buffaloes":
-			return 209
-		elif name=="Seibu Lions":
-			return 210
-		elif name=="Rakuten Gold. Eagles":
-			return 211
 		else:
 			return -1
 			pass
-		#kbo and npb added
 	def get_str_team_mlb(self,name):
 		if name == 0:
 			return "baltimore"
